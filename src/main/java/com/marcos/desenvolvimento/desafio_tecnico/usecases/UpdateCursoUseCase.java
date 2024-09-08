@@ -6,26 +6,28 @@ import com.marcos.desenvolvimento.desafio_tecnico.request.CursoRequest;
 import org.springframework.stereotype.Service;
 
 @Service
-public class InsertCursoUseCase {
+public class UpdateCursoUseCase {
 
     private final DAOCurso daoCurso;
 
-    public InsertCursoUseCase(DAOCurso daoCurso) {
+    public UpdateCursoUseCase(DAOCurso daoCurso){
         this.daoCurso = daoCurso;
     }
 
-    public void salvar(CursoRequest cursoRequest) {
-        Curso curso = new Curso();
+    public Curso atualizarCurso(int codigoCurso, CursoRequest cursoRequest){
+        Curso cursoNomeAtualizado = new Curso();
+
         if(cursoRequest.getNome() != null || !cursoRequest.getNome().isEmpty()){
-            curso.setNome(cursoRequest.getNome());
-        }
-        if(cursoRequest.getDuracao() > 0) {
-            curso.setDuracao(cursoRequest.getDuracao());
+            cursoNomeAtualizado.setNome(cursoRequest.getNome());
         }
         if(cursoRequest.getDescricao() != null || !cursoRequest.getDescricao().isEmpty()){
-            curso.setDescricao(cursoRequest.getDescricao());
+            cursoNomeAtualizado.setDescricao(cursoRequest.getDescricao());
         }
-        daoCurso.salvarCurso(curso);
+        if(cursoRequest.getDuracao() > 0){
+            cursoNomeAtualizado.setDuracao(cursoRequest.getDuracao());
+        }
+        daoCurso.atualizarNomeCurso(cursoNomeAtualizado, codigoCurso);
+        return cursoNomeAtualizado;
     }
 
 }

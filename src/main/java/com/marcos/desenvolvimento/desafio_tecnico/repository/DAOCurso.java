@@ -34,4 +34,18 @@ public class DAOCurso {
             LOGGER.error("Erro ao realizar um insert na tabela curso! Classe de erro: " + this.getClass().getName(), e);
         }
     }
+
+    @Transactional
+    public void atualizarNomeCurso(Curso curso, int codigoCurso) {
+        String queryAtualizacaoCurso = "UPDATE curso SET nome = ?, descricao = ?, duracao = ? WHERE codigo_curso = ?";
+        try {
+            jdbcTemplate.update(queryAtualizacaoCurso, curso.getNome(), curso.getDescricao(), curso.getDuracao(), codigoCurso);
+            LOGGER.info("Realizado um UPDATE na tabela curso no campo nome com o seguinte valor: {} , " +
+                    "passando o seguinte código: {}", curso.getNome(), codigoCurso);
+        } catch (Exception e) {
+            LOGGER.error("Erro ao realizar um update na tabela curso! Classe de erro: " + this.getClass().getName(), e);
+            throw e;
+        }
+    }
+
 }

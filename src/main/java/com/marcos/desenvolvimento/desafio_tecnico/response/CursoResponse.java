@@ -1,8 +1,6 @@
-package com.marcos.desenvolvimento.desafio_tecnico.entity;
+package com.marcos.desenvolvimento.desafio_tecnico.response;
 
-public class Curso {
-
-    private int codigoCurso;
+public class CursoResponse {
 
     private String nome;
 
@@ -10,29 +8,15 @@ public class Curso {
 
     private int duracao;
 
-    public Curso() {
+    public CursoResponse() {
 
     }
 
-    public Curso(int codigoCurso, String nome, String descricao, int duracao) {
-        this.codigoCurso = codigoCurso;
+    public CursoResponse(String nome, String descricao, int duracao) {
+        super();
         this.nome = nome;
         this.descricao = descricao;
         this.duracao = duracao;
-    }
-
-    public Curso(String nome, String descricao, int duracao) {
-        this.nome = nome;
-        this.descricao = descricao;
-        this.duracao = duracao;
-    }
-
-    public int getCodigoCurso() {
-        return codigoCurso;
-    }
-
-    public void setCodigoCurso(int codigoCurso) {
-        this.codigoCurso = codigoCurso;
     }
 
     public String getNome() {

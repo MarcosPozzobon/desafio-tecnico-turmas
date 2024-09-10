@@ -1,10 +1,8 @@
-package com.marcos.desenvolvimento.desafio_tecnico.entity;
+package com.marcos.desenvolvimento.desafio_tecnico.request;
 
 import java.util.Date;
 
-public class Funcionario {
-
-    private int codigoFuncionario;
+public class FuncionarioRequest {
 
     private String nome;
 
@@ -18,27 +16,17 @@ public class Funcionario {
 
     private boolean status;
 
-    public Funcionario() {
+    public FuncionarioRequest() {
 
     }
 
-    public Funcionario(int codigoFuncionario, String nome, String cpf, Date dtNascimento, String cargo, Date dtAdmissao, boolean status) {
-        this.codigoFuncionario = codigoFuncionario;
+    public FuncionarioRequest(String nome, String cpf, Date dtNascimento, String cargo, Date dtAdmissao, boolean status) {
         this.nome = nome;
         this.cpf = cpf;
         this.dtNascimento = dtNascimento;
         this.cargo = cargo;
         this.dtAdmissao = dtAdmissao;
         this.status = status;
-    }
-
-
-    public int getCodigoFuncionario() {
-        return codigoFuncionario;
-    }
-
-    public void setCodigoFuncionario(int codigoFuncionario) {
-        this.codigoFuncionario = codigoFuncionario;
     }
 
     public String getNome() {
@@ -81,14 +69,11 @@ public class Funcionario {
         this.dtAdmissao = dtAdmissao;
     }
 
-    public boolean getStatus() {
-        return true;
+    public boolean isStatus() {
+        return status;
     }
 
     public void setStatus(boolean status) {
         this.status = status;
     }
-
-
-
 }

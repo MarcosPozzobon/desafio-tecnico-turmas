@@ -14,7 +14,7 @@ public class InsertCursoUseCase {
         this.daoCurso = daoCurso;
     }
 
-    public void salvar(CursoRequest cursoRequest) {
+    public void salvar(final CursoRequest cursoRequest) {
         Curso curso = new Curso();
         if(cursoRequest.getNome() != null || !cursoRequest.getNome().isEmpty()){
             curso.setNome(cursoRequest.getNome());

@@ -36,7 +36,7 @@ public class InsertFuncionarioUseCase {
             funcionario.setCargo(funcionarioRequest.getCargo());
         }
 
-        funcionario.setStatus(true);
+        funcionario.setIsAtivo(true);
         daoFuncionario.salvarFuncionario(funcionario);
     }
 }

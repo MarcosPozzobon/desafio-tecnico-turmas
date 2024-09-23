@@ -16,20 +16,20 @@ public class Funcionario {
 
     private Date dtAdmissao;
 
-    private boolean status;
+    private boolean isAtivo;
 
     public Funcionario() {
 
     }
 
-    public Funcionario(int codigoFuncionario, String nome, String cpf, Date dtNascimento, String cargo, Date dtAdmissao, boolean status) {
+    public Funcionario(int codigoFuncionario, String nome, String cpf, Date dtNascimento, String cargo, Date dtAdmissao, boolean isAtivo) {
         this.codigoFuncionario = codigoFuncionario;
         this.nome = nome;
         this.cpf = cpf;
         this.dtNascimento = dtNascimento;
         this.cargo = cargo;
         this.dtAdmissao = dtAdmissao;
-        this.status = status;
+        this.isAtivo = isAtivo;
     }
 
 
@@ -81,14 +81,11 @@ public class Funcionario {
         this.dtAdmissao = dtAdmissao;
     }
 
-    public boolean getStatus() {
+    public boolean isAtivo() {
         return true;
     }
 
-    public void setStatus(boolean status) {
-        this.status = status;
+    public void setIsAtivo(boolean isAtivo) {
+        this.isAtivo = isAtivo;
     }
-
-
-
 }

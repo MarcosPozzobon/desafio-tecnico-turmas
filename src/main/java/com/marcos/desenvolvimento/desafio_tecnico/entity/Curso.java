@@ -10,15 +10,18 @@ public class Curso {
 
     private int duracao;
 
+    private String isAtivo;
+
     public Curso() {
 
     }
 
-    public Curso(int codigoCurso, String nome, String descricao, int duracao) {
+    public Curso(int codigoCurso, String nome, String descricao, int duracao, String isAtivo) {
         this.codigoCurso = codigoCurso;
         this.nome = nome;
         this.descricao = descricao;
         this.duracao = duracao;
+        this.isAtivo = isAtivo;
     }
 
     public Curso(String nome, String descricao, int duracao) {
@@ -57,5 +60,13 @@ public class Curso {
 
     public void setDuracao(int duracao) {
         this.duracao = duracao;
+    }
+
+    public String getIsAtivo() {
+        return isAtivo;
+    }
+
+    public void setIsAtivo(String isAtivo) {
+        this.isAtivo = isAtivo;
     }
 }

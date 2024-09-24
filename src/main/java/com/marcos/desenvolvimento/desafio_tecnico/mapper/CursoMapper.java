@@ -27,14 +27,19 @@ public class CursoMapper {
         if(curso.getDuracao() > 0){
             cursoResponse.setDuracao(curso.getDuracao());
         }
+
+        if(curso.getIsAtivo() != null && !curso.getIsAtivo().isEmpty()){
+            cursoResponse.setIsAtivo(curso.getIsAtivo());
+        }
+
         return cursoResponse;
     }
 
     public List<CursoResponse> toCursoResponseList(List<Curso> listaCursos){
         return listaCursos
                 .stream()
-                .map(cursoAtual -> toCursoResponse(cursoAtual))
-                .collect(Collectors.toUnmodifiableList());
+                .map(this::toCursoResponse)
+                .toList();
     }
 
 }

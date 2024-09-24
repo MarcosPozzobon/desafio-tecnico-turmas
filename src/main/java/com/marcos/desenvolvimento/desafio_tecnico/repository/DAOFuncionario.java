@@ -1,11 +1,9 @@
 package com.marcos.desenvolvimento.desafio_tecnico.repository;
 
-import com.marcos.desenvolvimento.desafio_tecnico.entity.Curso;
 import com.marcos.desenvolvimento.desafio_tecnico.entity.Funcionario;
 import com.marcos.desenvolvimento.desafio_tecnico.request.FuncionarioRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -81,7 +79,7 @@ public class DAOFuncionario {
         try {
             String buscaFuncionarioPorNome = "" +
                     "SELECT nome, cpf, dt_nascimento, cargo, dt_admissao FROM funcionario " +
-                    "WHERE nome ILIKE ? AND is_ativo = 'true'";
+                    "WHERE nome ILIKE ? AND is_ativo = 'true' ORDER BY nome";
 
             if (nomeFuncionario != null && !nomeFuncionario.isBlank()) {
                 String nomeParam = "%" + nomeFuncionario + "%";
@@ -97,5 +95,47 @@ public class DAOFuncionario {
             throw new RuntimeException("Alguma coisa deu errado em " + this.getClass().getName(), e);
         }
         throw new IllegalArgumentException("Argumento inválido: " + nomeFuncionario + " passado em :" + this.getClass().getName());
+    }
+
+    public List<Funcionario> buscarFuncionariosAtivos(int pagina, int tamanho) {
+        try {
+            String buscaFuncionariosAtivos = "" +
+                    "SELECT nome, cpf, dt_nascimento, cargo, dt_admissao FROM funcionario " +
+                    "WHERE is_ativo = 'true' " +
+                    "ORDER BY nome" +
+                    "LIMIT ? OFFSET ?";
+
+            int offset = pagina * tamanho;
+
+            List<Funcionario> funcionariosExistentes = jdbcTemplate.query(
+                    buscaFuncionariosAtivos,
+                    new Object[]{tamanho, offset},
+                    new BeanPropertyRowMapper<>(Funcionario.class)
+            );
+            return funcionariosExistentes;
+        } catch (Exception e) {
+            throw new RuntimeException("Alguma coisa deu errado em " + this.getClass().getName(), e);
+        }
+    }
+
+    public List<Funcionario> buscarFuncionariosInativos(int pagina, int tamanho) {
+        try {
+            String buscaFuncionariosAtivos = "" +
+                    "SELECT nome, cpf, dt_nascimento, cargo, dt_admissao FROM funcionario " +
+                    "WHERE is_ativo = 'false' " +
+                    "ORDER BY nome" +
+                    "LIMIT ? OFFSET ?";
+
+            int offset = pagina * tamanho;
+
+            List<Funcionario> funcionariosExistentes = jdbcTemplate.query(
+                    buscaFuncionariosAtivos,
+                    new Object[]{tamanho, offset},
+                    new BeanPropertyRowMapper<>(Funcionario.class)
+            );
+            return funcionariosExistentes;
+        } catch (Exception e) {
+            throw new RuntimeException("Alguma coisa deu errado em " + this.getClass().getName(), e);
+        }
     }
 }

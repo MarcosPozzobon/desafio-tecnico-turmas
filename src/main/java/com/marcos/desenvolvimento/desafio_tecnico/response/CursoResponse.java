@@ -1,5 +1,8 @@
 package com.marcos.desenvolvimento.desafio_tecnico.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class CursoResponse {
 
     private String nome;
@@ -8,15 +11,19 @@ public class CursoResponse {
 
     private int duracao;
 
+    @JsonProperty("ativo")
+    private String isAtivo;
+
     public CursoResponse() {
 
     }
 
-    public CursoResponse(String nome, String descricao, int duracao) {
+    public CursoResponse(String nome, String descricao, int duracao, String isAtivo) {
         super();
         this.nome = nome;
         this.descricao = descricao;
         this.duracao = duracao;
+        this.isAtivo = isAtivo;
     }
 
     public String getNome() {
@@ -41,5 +48,13 @@ public class CursoResponse {
 
     public void setDuracao(int duracao) {
         this.duracao = duracao;
+    }
+
+    public String getIsAtivo() {
+        return isAtivo;
+    }
+
+    public void setIsAtivo(String isAtivo) {
+        this.isAtivo = isAtivo;
     }
 }

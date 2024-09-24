@@ -1,10 +1,11 @@
 package com.marcos.desenvolvimento.desafio_tecnico.config;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import javax.sql.DataSource;
 
@@ -26,12 +27,20 @@ public class DataSourceConfig {
 
     @Bean
     public DataSource dataSource() {
-        DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName("org.postgresql.Driver");
-        dataSource.setUrl(URL);
-        dataSource.setUsername(USER);
-        dataSource.setPassword(PASSWORD);
-        return dataSource;
+        HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setDriverClassName("org.postgresql.Driver");
+        hikariConfig.setJdbcUrl(URL);
+        hikariConfig.setUsername(USER);
+        hikariConfig.setPassword(PASSWORD);
+
+        hikariConfig.setIdleTimeout(10000);
+        hikariConfig.setMaximumPoolSize(10);
+        hikariConfig.setMaxLifetime(1800000);
+        hikariConfig.setConnectionTestQuery("SELECT 1");
+        hikariConfig.setValidationTimeout(1000);
+        hikariConfig.setMinimumIdle(5);
+
+        return new HikariDataSource(hikariConfig);
     }
 
     @Bean
@@ -39,4 +48,3 @@ public class DataSourceConfig {
         return new JdbcTemplate(dataSource);
     }
 }
-

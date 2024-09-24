@@ -29,7 +29,7 @@ public class FuncionarioController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FuncionarioController.class);
 
-    private FuncionarioController(
+    public FuncionarioController(
             InsertFuncionarioUseCase insertFuncionarioUseCase,
             UpdateFuncionarioUseCase updateFuncionarioUseCase,
             FindFuncionarioUseCase findFuncionarioUseCase,
@@ -63,4 +63,23 @@ public class FuncionarioController {
         LOGGER.info("O serviço de busca de funcionário por nome foi chamado em: " + this.getClass().getName());
         return ResponseEntity.ok(funcionarioMapper.toFuncionarioResponseList(findFuncionarioUseCase.encontrarPorNome(nomeFuncionario)));
     }
+
+    @GetMapping("/listar-funcionarios-ativos")
+    public ResponseEntity<List<FuncionarioResponse>> listarFuncionariosAtivos(
+            @RequestParam(value = "pagina", defaultValue = "0") int pagina,
+            @RequestParam(value = "tamanho", defaultValue = "10") int tamanho
+    ){
+        LOGGER.info("O serviço de listagem por funcionários ativos foi chamado em: " + this.getClass().getName());
+        return ResponseEntity.ok(funcionarioMapper.toFuncionarioResponseList(findFuncionarioUseCase.listarAtivos(pagina, tamanho)));
+    }
+
+    @GetMapping("/listar-funcionarios-inativos")
+    public ResponseEntity<List<FuncionarioResponse>> listarFuncionariosInativos(
+            @RequestParam(value = "pagina", defaultValue = "0") int pagina,
+            @RequestParam(value = "tamanho", defaultValue = "10") int tamanho
+    ){
+        LOGGER.info("O serviço de listagem por funcionários inativos foi chamado em: " + this.getClass().getName());
+        return ResponseEntity.ok(funcionarioMapper.toFuncionarioResponseList(findFuncionarioUseCase.listarAtivos(pagina, tamanho)));
+    }
+
 }

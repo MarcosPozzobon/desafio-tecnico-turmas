@@ -68,4 +68,5 @@ public class FuncionarioMapper {
                 .map(this::toFuncionarioResponse)
                 .toList();
     }
+
 }

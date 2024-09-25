@@ -82,4 +82,6 @@ public class FuncionarioController {
         return ResponseEntity.ok(funcionarioMapper.toFuncionarioResponseList(findFuncionarioUseCase.listarAtivos(pagina, tamanho)));
     }
 
+
+
 }

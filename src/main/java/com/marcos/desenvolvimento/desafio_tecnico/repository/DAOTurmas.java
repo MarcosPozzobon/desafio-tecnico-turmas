@@ -30,9 +30,13 @@ public class DAOTurmas {
         this.dataSourceConfig = dataSourceConfig;
     }
 
-    public FullResultSetTurmaResponse buscarTurmas(int codigoCurso, int resultados) {
-        List<TurmaResponse> listaDeTurmas = new ArrayList<>();
-        FullResultSetTurmaResponse fullResultSetTurmaResponse = new FullResultSetTurmaResponse();
+    public List<FullResultSetTurmaResponse> buscarTurmas(int paginacao) {
+
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+
+        List<FullResultSetTurmaResponse> fullResultSetTurmaResponseList = new ArrayList<>();
+
         String consultaInformacaoCompletaTurmas = "SELECT \n" +
                 "    curso.codigo_curso AS codigo_curso,\n" +
                 "    curso.nome AS nome_curso,\n" +
@@ -50,54 +54,54 @@ public class DAOTurmas {
                 "LEFT OUTER JOIN turma ON turma.curso_id_fk = curso.codigo_curso\n" +
                 "LEFT OUTER JOIN turma_participante ON turma_participante.turma_id_fk = turma.codigo_turma\n" +
                 "LEFT OUTER JOIN funcionario ON turma_participante.funcionario_id_fk = funcionario.codigo_funcionario\n" +
-                "WHERE\n" +
-                "    curso.codigo_curso = ?\n" +
                 "ORDER BY curso.nome\n" +
                 "LIMIT ? OFFSET 0";
 
-        try (Connection connection = dataSourceConfig.dataSource().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(consultaInformacaoCompletaTurmas)) {
+        try {
+            preparedStatement = dataSourceConfig.dataSource().getConnection().prepareStatement(consultaInformacaoCompletaTurmas);
+            preparedStatement.setInt(1, paginacao);
 
-            preparedStatement.setInt(1, codigoCurso);
-            preparedStatement.setInt(2, resultados);
+            resultSet = preparedStatement.executeQuery();
 
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    fullResultSetTurmaResponse.setCodigoCurso(resultSet.getInt("codigo_curso"));
-                    fullResultSetTurmaResponse.setNomeCurso(resultSet.getString("nome_curso"));
-                    fullResultSetTurmaResponse.setDuracao(resultSet.getInt("duracao_em_minutos"));
-                    fullResultSetTurmaResponse.setQuantidadeTurmas(resultSet.getInt("quantidade_turmas"));
+            while (resultSet.next()) {
 
-                    do {
-                        TurmaResponse turmaResponse = new TurmaResponse();
-                        turmaResponse.setCodigoTurma(resultSet.getInt("turma"));
-                        turmaResponse.setDataInicio(resultSet.getDate("data_inicial"));
-                        turmaResponse.setDataFim(resultSet.getDate("data_final"));
-                        turmaResponse.setLocal(resultSet.getString("local"));
-                        turmaResponse.setQuantidadeParticipantes(resultSet.getInt("quantidade_participantes"));
+                List<TurmaParticipanteResponse> listaDeParticipantes = new ArrayList<>();
 
-                        List<TurmaParticipanteResponse> listaDeParticipantes = new ArrayList<>();
+                TurmaParticipanteResponse participante = new TurmaParticipanteResponse();
+                participante.setCodigoParticipanteTurma(resultSet.getInt("codigo"));
+                participante.setNome(resultSet.getString("nome_funcionario"));
+                listaDeParticipantes.add(participante);
 
-                        do {
-                            if (resultSet.getInt("codigo") != 0) {  // Verifique se existe um participante
-                                TurmaParticipanteResponse turmaParticipanteResponse = new TurmaParticipanteResponse();
-                                turmaParticipanteResponse.setCodigoParticipanteTurma(resultSet.getInt("codigo"));
-                                turmaParticipanteResponse.setNome(resultSet.getString("nome_funcionario"));
-                                listaDeParticipantes.add(turmaParticipanteResponse);
-                            }
-                        } while (resultSet.next() && resultSet.getInt("turma") == turmaResponse.getCodigoTurma());
+                TurmaResponse turma = new TurmaResponse();
+                turma.setCodigoTurma(resultSet.getInt("turma"));
+                turma.setDataInicio(resultSet.getDate("data_inicial"));
+                turma.setDataFim(resultSet.getDate("data_final"));
+                turma.setLocal(resultSet.getString("local"));
+                turma.setQuantidadeParticipantes(resultSet.getInt("quantidade_participantes"));
+                turma.setParticipantes(listaDeParticipantes);
 
-                        turmaResponse.setParticipantes(listaDeParticipantes);
-                        listaDeTurmas.add(turmaResponse);
+                FullResultSetTurmaResponse fullResultSetTurmaResponse = new FullResultSetTurmaResponse();
+                fullResultSetTurmaResponse.setCodigoCurso(resultSet.getInt("codigo_curso"));
+                fullResultSetTurmaResponse.setNomeCurso(resultSet.getString("nome_curso"));
+                fullResultSetTurmaResponse.setDuracao(resultSet.getInt("duracao_em_minutos"));
+                fullResultSetTurmaResponse.setQuantidadeTurmas(resultSet.getInt("quantidade_turmas"));
+                fullResultSetTurmaResponse.setTurmas(List.of(turma));
 
-                    } while (resultSet.next());
-                }
+                fullResultSetTurmaResponseList.add(fullResultSetTurmaResponse);
             }
-            fullResultSetTurmaResponse.setTurmas(listaDeTurmas);
-        } catch (SQLException e) {
-            throw new RuntimeException("Alguma coisa deu errado em " + this.getClass().getName(), e);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (resultSet != null) resultSet.close();
+                if (preparedStatement != null) preparedStatement.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
 
-        return fullResultSetTurmaResponse;
+        return fullResultSetTurmaResponseList;
     }
+
 }

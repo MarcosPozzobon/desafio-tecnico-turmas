@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("api/v1/turmas")
 public class TurmaController {
@@ -17,8 +19,8 @@ public class TurmaController {
     DAOTurmas daoTurmas;
 
     @GetMapping("listar-turmas")
-    public ResponseEntity<FullResultSetTurmaResponse> listarTodasAsTurmas(){
-        return ResponseEntity.ok(daoTurmas.buscarTurmas(4, 10));
+    public ResponseEntity<List<FullResultSetTurmaResponse>> listarTodasAsTurmas(){
+        return ResponseEntity.ok(daoTurmas.buscarTurmas(10));
     }
 
 }

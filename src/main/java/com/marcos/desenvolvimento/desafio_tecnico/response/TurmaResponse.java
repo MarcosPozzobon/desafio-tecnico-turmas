@@ -2,6 +2,7 @@ package com.marcos.desenvolvimento.desafio_tecnico.response;
 
 import com.marcos.desenvolvimento.desafio_tecnico.entity.Turma;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -9,9 +10,9 @@ public class TurmaResponse {
 
     private Integer codigoTurma;
 
-    private Date dataInicio;
+    private LocalDate dataInicio;
 
-    private Date dataFim;
+    private LocalDate dataFim;
 
     private String local;
 
@@ -21,7 +22,7 @@ public class TurmaResponse {
 
     public TurmaResponse(){}
 
-    public TurmaResponse(Integer codigoTurma, Date dataInicio, Date dataFim, String local, Integer quantidadeParticipantes, List<TurmaParticipanteResponse> participantes) {
+    public TurmaResponse(Integer codigoTurma, LocalDate dataInicio, LocalDate dataFim, String local, Integer quantidadeParticipantes, List<TurmaParticipanteResponse> participantes) {
         this.codigoTurma = codigoTurma;
         this.dataInicio = dataInicio;
         this.dataFim = dataFim;
@@ -38,19 +39,19 @@ public class TurmaResponse {
         this.codigoTurma = codigoTurma;
     }
 
-    public Date getDataInicio() {
+    public LocalDate getDataInicio() {
         return dataInicio;
     }
 
-    public void setDataInicio(Date dataInicio) {
+    public void setDataInicio(LocalDate dataInicio) {
         this.dataInicio = dataInicio;
     }
 
-    public Date getDataFim() {
+    public LocalDate getDataFim() {
         return dataFim;
     }
 
-    public void setDataFim(Date dataFim) {
+    public void setDataFim(LocalDate dataFim) {
         this.dataFim = dataFim;
     }
 

@@ -1,7 +1,9 @@
 package com.marcos.desenvolvimento.desafio_tecnico.repository;
 
 import com.marcos.desenvolvimento.desafio_tecnico.config.DataSourceConfig;
+import com.marcos.desenvolvimento.desafio_tecnico.response.CursoResponse;
 import com.marcos.desenvolvimento.desafio_tecnico.response.FullResultSetTurmaResponse;
+import com.marcos.desenvolvimento.desafio_tecnico.response.TurmaInformacoesBasicasResponse;
 import com.marcos.desenvolvimento.desafio_tecnico.response.TurmaParticipanteResponse;
 import com.marcos.desenvolvimento.desafio_tecnico.response.TurmaResponse;
 import org.json.JSONArray;
@@ -27,6 +29,8 @@ public class DAOTurmas {
     private final JdbcTemplate jdbcTemplate;
 
     private final DataSourceConfig dataSourceConfig;
+    
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public DAOTurmas(JdbcTemplate jdbcTemplate, DataSourceConfig dataSourceConfig){
         this.jdbcTemplate = jdbcTemplate;
@@ -35,7 +39,7 @@ public class DAOTurmas {
 
     public List<FullResultSetTurmaResponse> buscarTurmas(int paginacao) {
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        //DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
@@ -160,5 +164,64 @@ public class DAOTurmas {
         }
         return listaDeParticipantes;
     }
+    
+    public List<TurmaInformacoesBasicasResponse> listarTurmasInformacaoBasica(int paginacao){
+    	
+    	PreparedStatement preparedStatement = null;
+    	ResultSet resultSet = null;
+    	TurmaInformacoesBasicasResponse turmaInformacoesBasicasAtual = new TurmaInformacoesBasicasResponse();
+    	List<TurmaInformacoesBasicasResponse> listaDeTurmasInformacaoBasica = new ArrayList<TurmaInformacoesBasicasResponse>();
+    	
+    	String buscarInfoBasicaTurmas = "SELECT \r\n"
+    			+ "    turma.dt_inicio AS data_inicial,\r\n"
+    			+ "    turma.dt_fim AS data_final,\r\n"
+    			+ "    turma.local AS local_das_aulas,\r\n"
+    			+ "    curso.nome AS nome_curso,\r\n"
+    			+ "    curso.descricao AS descricao,\r\n"
+    			+ "    curso.duracao AS duracao_em_minutos,\r\n"
+    			+ "	curso.is_ativo AS ativo\r\n"
+    			+ "FROM turma\r\n"
+    			+ "INNER JOIN curso ON curso.codigo_curso = turma.curso_id_fk\r\n"
+    			+ "WHERE curso.is_ativo <> 'false'\r\n"
+    			+ "ORDER BY curso.nome\r\n"
+    			+ "LIMIT ? OFFSET 0";
+    	try {
+    		
+    		preparedStatement = dataSourceConfig.dataSource().getConnection().prepareStatement(buscarInfoBasicaTurmas);
+    		preparedStatement.setInt(1, paginacao);
+    		resultSet = preparedStatement.executeQuery();
+    		
+    		while(resultSet.next()) {
+    			
+    			String dataInicialTurma = resultSet.getString("data_inicial");
+    			String dataFinalTurma = resultSet.getString("data_final");
+    			
+    			turmaInformacoesBasicasAtual.setDataInicio(LocalDate.parse(dataInicialTurma, formatter));
+    			turmaInformacoesBasicasAtual.setDataFim(LocalDate.parse(dataFinalTurma, formatter));
+    			turmaInformacoesBasicasAtual.setLocal(resultSet.getString("local_das_aulas"));
+    			
+    			CursoResponse cursoResponse = new CursoResponse();
+    			cursoResponse.setNome(resultSet.getString("nome_curso"));
+    			cursoResponse.setDescricao(resultSet.getString("descricao"));
+    			cursoResponse.setDuracao(resultSet.getInt("duracao_em_minutos"));
+    			cursoResponse.setIsAtivo(resultSet.getString("ativo"));
+    			
+    			turmaInformacoesBasicasAtual.setCursoAssociado(cursoResponse);
+    			listaDeTurmasInformacaoBasica.add(turmaInformacoesBasicasAtual);
+    		}
 
+    		
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+            try {
+                if (resultSet != null) resultSet.close();
+                if (preparedStatement != null) preparedStatement.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+                LOGGER.debug("Erro: " + e.getMessage() + " SQL usado para a consulta: " + buscarInfoBasicaTurmas + " argumento passado para o SQL: " + paginacao);
+            }
+        }
+    	return listaDeTurmasInformacaoBasica;
+    }
 }

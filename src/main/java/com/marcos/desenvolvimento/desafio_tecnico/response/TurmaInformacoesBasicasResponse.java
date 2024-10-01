@@ -54,7 +54,4 @@ public class TurmaInformacoesBasicasResponse {
 	public void setCursoAssociado(CursoResponse cursoAssociado) {
 		this.cursoAssociado = cursoAssociado;
 	}
-	
-	
-
 }

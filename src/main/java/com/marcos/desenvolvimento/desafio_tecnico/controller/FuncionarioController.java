@@ -81,7 +81,10 @@ public class FuncionarioController {
         LOGGER.info("O serviço de listagem por funcionários inativos foi chamado em: " + this.getClass().getName());
         return ResponseEntity.ok(funcionarioMapper.toFuncionarioResponseList(findFuncionarioUseCase.listarAtivos(pagina, tamanho)));
     }
-
-
-
+    
+    @GetMapping("/listar-funcionario/{codigo}")
+    public ResponseEntity<FuncionarioResponse> obterFuncionarioPorCodigo(@PathVariable(value = "codigo") final int codigo){
+    	LOGGER.info("O serviço de busca de funcionário por código foi chamado em: " + this.getClass().getName());
+    	return ResponseEntity.ok(funcionarioMapper.toFuncionarioResponse(findFuncionarioUseCase.buscarFuncionarioPorCodigo(codigo)));
+    }
 }

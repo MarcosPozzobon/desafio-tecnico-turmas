@@ -7,6 +7,7 @@ import com.marcos.desenvolvimento.desafio_tecnico.response.TurmaInformacoesBasic
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 
 @Service
@@ -26,6 +27,13 @@ public class FindTurmasUseCase {
     @Cacheable(value = "turmas_info_basica_result_set")
     public List<TurmaInformacoesBasicasResponse> listarTurmasBasico(int paginacao){
     	return daoTurmas.listarTurmasInformacaoBasica(paginacao);
+    }
+    
+    public List<HashMap<String, Object>> listarTurmasVinculadasCurso(int codigoCurso, int paginacao){
+    	if(codigoCurso > 0) {
+    		return daoTurmas.listarTurmasVinculadas(codigoCurso, paginacao);
+    	}
+    	return null;
     }
 
 }

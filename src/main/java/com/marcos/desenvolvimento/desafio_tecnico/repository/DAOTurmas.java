@@ -1,6 +1,7 @@
 package com.marcos.desenvolvimento.desafio_tecnico.repository;
 
 import com.marcos.desenvolvimento.desafio_tecnico.config.DataSourceConfig;
+import com.marcos.desenvolvimento.desafio_tecnico.entity.Turma;
 import com.marcos.desenvolvimento.desafio_tecnico.response.CursoResponse;
 import com.marcos.desenvolvimento.desafio_tecnico.response.FullResultSetTurmaResponse;
 import com.marcos.desenvolvimento.desafio_tecnico.response.TurmaInformacoesBasicasResponse;
@@ -10,7 +11,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
@@ -19,6 +19,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @Repository
@@ -26,14 +27,12 @@ public class DAOTurmas {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DAOTurmas.class);
 
-    private final JdbcTemplate jdbcTemplate;
 
     private final DataSourceConfig dataSourceConfig;
     
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    public DAOTurmas(JdbcTemplate jdbcTemplate, DataSourceConfig dataSourceConfig){
-        this.jdbcTemplate = jdbcTemplate;
+    public DAOTurmas(DataSourceConfig dataSourceConfig){
         this.dataSourceConfig = dataSourceConfig;
     }
 
@@ -223,5 +222,70 @@ public class DAOTurmas {
             }
         }
     	return listaDeTurmasInformacaoBasica;
+    }
+    
+    public List<HashMap<String, Object>> listarTurmasVinculadas(int codigoCurso, int paginacao){
+    	String consultaTurmasVinculadas = "SELECT \r\n"
+    			+ "	turma.codigo_turma AS codigo_turma,\r\n"
+    			+ "	turma.dt_inicio AS data_inicial,\r\n"
+    			+ "	turma.dt_fim AS data_final,\r\n"
+    			+ "	turma.local AS local_das_aulas,\r\n"
+    			+ "	curso.nome AS nome_curso,\r\n"
+    			+ "	curso.descricao AS descricao,\r\n"
+    			+ "	curso.duracao AS duracao_em_minutos,\r\n"
+    			+ "	curso.is_ativo AS ativo,\r\n"
+    			+ "	(SELECT COUNT(*) FROM turma_participante WHERE turma_participante.turma_id_fk = turma.codigo_turma) AS qtd_participantes \r\n"
+    			+ "FROM \r\n"
+    			+ "	turma\r\n"
+    			+ "INNER JOIN curso ON curso.codigo_curso = turma.curso_id_fk\r\n"
+    			+ "WHERE \r\n"
+    			+ "	curso.codigo_curso = ?\r\n"
+    			+ "ORDER BY \r\n"
+    			+ "	turma.dt_inicio\r\n"
+    			+ "LIMIT ? OFFSET 0";
+    	PreparedStatement preparedStatement = null;
+    	ResultSet resultSet = null;
+    	
+    	List<HashMap<String, Object>> listaTurmasVinculadas = new ArrayList<HashMap<String,Object>>();
+    	
+    	try {
+    		
+    		preparedStatement = dataSourceConfig.dataSource().getConnection().prepareStatement(consultaTurmasVinculadas);
+    		preparedStatement.setInt(1, codigoCurso);
+    		preparedStatement.setInt(2, paginacao);
+    		resultSet = preparedStatement.executeQuery();
+    		
+    		while(resultSet.next()) {
+    			
+    			HashMap<String, Object> finalJsonResponse = new HashMap<String, Object>();
+    			
+    			if(resultSet.getInt("codigo_turma") > 0) {
+    				finalJsonResponse.put("codigo_turma", resultSet.getInt("codigo_turma"));
+    			}
+    			
+    			String dataInicial = resultSet.getString("data_inicial");
+    			String dataFinal = resultSet.getString("data_final");
+    			
+    			if(dataInicial != null && !dataInicial.isEmpty()) {
+    				finalJsonResponse.put("data_inicial", LocalDate.parse(dataInicial, formatter));
+    			} else if(dataFinal != null && !dataFinal.isEmpty()) {
+    				finalJsonResponse.put("data_final", LocalDate.parse(dataFinal, formatter));
+    			}
+    			
+    			finalJsonResponse.put("local_das_aulas", resultSet.getString("local_das_aulas"));
+    			finalJsonResponse.put("nome_curso", resultSet.getString("nome_curso"));
+    			finalJsonResponse.put("descricao", resultSet.getString("descricao"));
+    			finalJsonResponse.put("duracao_em_minutos", resultSet.getInt("duracao_em_minutos"));
+    			finalJsonResponse.put("ativo", Boolean.parseBoolean(resultSet.getString("ativo")));
+    			finalJsonResponse.put("quantidade_participantes", resultSet.getInt("qtd_participantes"));
+    			
+    			listaTurmasVinculadas.add(finalJsonResponse);
+    			
+    		}
+    		
+    	}catch (Exception e) {
+    		e.printStackTrace();
+		}
+    	return listaTurmasVinculadas;
     }
 }

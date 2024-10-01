@@ -36,5 +36,12 @@ public class FindFuncionarioUseCase {
     public List<Funcionario> listarInativos(int pagina, int tamanho){
         return daoFuncionario.buscarFuncionariosInativos(pagina, tamanho);
     }
+    
+    public Funcionario buscarFuncionarioPorCodigo(int codigo) {
+    	if(codigo > 0) {
+    		return daoFuncionario.buscarFuncionarioPorCodigo(codigo);
+    	}
+    	return null;
+    }
 
 }

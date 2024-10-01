@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.List;
 
 @RestController
@@ -36,5 +37,15 @@ public class TurmaController {
     	LOGGER.info("O serviço de listagem básico de turmas foi chamado em: " + this.getClass().getName());
     	return ResponseEntity.ok(findTurmasUseCase.listarTurmasBasico(paginacao));
     }
+    
+    @GetMapping("listar-turmas-vinculadas/{codigo_curso}/{paginacao}")
+    public ResponseEntity<List<HashMap<String, Object>>> listarTurmasVinculadasCurso(
+    		@PathVariable(value = "codigo_curso") int codigoCurso, 
+    		@PathVariable(value = "paginacao") int paginacao
+    		){
+    	LOGGER.info("O serviço de listagem de turmas vinculadas foi chamado em: " + this.getClass().getName());
+    	return ResponseEntity.ok(findTurmasUseCase.listarTurmasVinculadasCurso(codigoCurso, paginacao));
+    }
+    
    
 }

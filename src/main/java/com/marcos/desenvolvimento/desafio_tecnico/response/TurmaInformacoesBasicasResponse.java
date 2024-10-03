@@ -2,6 +2,8 @@ package com.marcos.desenvolvimento.desafio_tecnico.response;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class TurmaInformacoesBasicasResponse {
 	
 	private LocalDate dataInicio;
@@ -10,6 +12,7 @@ public class TurmaInformacoesBasicasResponse {
 	
 	private String local;
 	
+	@JsonProperty(value = "curso_associado")
 	private CursoResponse cursoAssociado;
 	
 	public TurmaInformacoesBasicasResponse() {};

@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,9 +28,13 @@ public class TurmaController {
     }
 
     @GetMapping("listar-turmas-informacao-completa/{paginacao}")
-    public ResponseEntity<List<FullResultSetTurmaResponse>> listarTodasAsTurmas(@PathVariable(value = "paginacao") int paginacao){
+    public ResponseEntity<List<FullResultSetTurmaResponse>> listarTodasAsTurmas(
+    		@PathVariable(value = "paginacao") int paginacao, 
+    		@RequestBody HashMap<String, Object> jsonIntervaloDataTurmas
+    		)
+    {
         LOGGER.info("O serviço de listagem de turmas foi chamado em: " + this.getClass().getName());
-        return ResponseEntity.ok(findTurmasUseCase.listarTodasAsTurmas(paginacao));
+        return ResponseEntity.ok(findTurmasUseCase.listarTodasAsTurmas(paginacao, jsonIntervaloDataTurmas.get("dt_inicio").toString(), jsonIntervaloDataTurmas.get("dt_fim").toString()));
     }
     
     @GetMapping("listar-turmas-informacao-basica/{paginacao}")
@@ -46,6 +51,6 @@ public class TurmaController {
     	LOGGER.info("O serviço de listagem de turmas vinculadas foi chamado em: " + this.getClass().getName());
     	return ResponseEntity.ok(findTurmasUseCase.listarTurmasVinculadasCurso(codigoCurso, paginacao));
     }
-    
+
    
 }

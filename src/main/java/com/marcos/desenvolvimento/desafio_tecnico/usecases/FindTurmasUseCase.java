@@ -19,9 +19,9 @@ public class FindTurmasUseCase {
         this.daoTurmas = daoTurmas;
     }
 
-    @Cacheable(value = "turmas_sem_filtro_result_set")
-    public List<FullResultSetTurmaResponse> listarTodasAsTurmas(int paginacao){
-        return daoTurmas.buscarTurmas(paginacao);
+    @Cacheable(value = "turmas_com_filtro_result_set")
+    public List<FullResultSetTurmaResponse> listarTodasAsTurmas(int paginacao, String dataInicial, String dataFinal){
+        return daoTurmas.buscarTurmas(dataInicial, dataFinal, paginacao);
     }
     
     @Cacheable(value = "turmas_info_basica_result_set")

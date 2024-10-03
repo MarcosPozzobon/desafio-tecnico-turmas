@@ -1,7 +1,6 @@
 package com.marcos.desenvolvimento.desafio_tecnico.repository;
 
 import com.marcos.desenvolvimento.desafio_tecnico.config.DataSourceConfig;
-import com.marcos.desenvolvimento.desafio_tecnico.entity.Turma;
 import com.marcos.desenvolvimento.desafio_tecnico.response.CursoResponse;
 import com.marcos.desenvolvimento.desafio_tecnico.response.FullResultSetTurmaResponse;
 import com.marcos.desenvolvimento.desafio_tecnico.response.TurmaInformacoesBasicasResponse;
@@ -13,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -30,56 +30,60 @@ public class DAOTurmas {
 
     private final DataSourceConfig dataSourceConfig;
     
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
 
     public DAOTurmas(DataSourceConfig dataSourceConfig){
         this.dataSourceConfig = dataSourceConfig;
     }
 
-    public List<FullResultSetTurmaResponse> buscarTurmas(int paginacao) {
-
-        //DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    public List<FullResultSetTurmaResponse> buscarTurmas(String dataInicial, String dataFinal, int paginacao) {
 
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
 
         List<FullResultSetTurmaResponse> fullResultSetTurmaResponseList = new ArrayList<>();
 
-        String consultaInformacaoCompletaTurmas = "SELECT \n" +
-                "    curso.codigo_curso AS codigo_curso,\n" +
-                "    curso.nome AS nome_curso,\n" +
-                "    curso.duracao AS duracao_em_minutos,\n" +
-                "    (SELECT COUNT(*) FROM turma WHERE turma.curso_id_fk = curso.codigo_curso) AS quantidade_turmas,\n" +
-                "    ARRAY_TO_JSON(ARRAY_AGG(json_build_object(\n" +
-                "        'turma', turma.codigo_turma, \n" +
-                "        'data_inicio', turma.dt_inicio, \n" +
-                "        'data_fim', turma.dt_fim, \n" +
-                "        'local', turma.local,\n" +
-                "        'quantidade_participantes', (\n" +
-                "            SELECT COUNT(*) \n" +
-                "            FROM turma_participante \n" +
-                "            WHERE turma_participante.turma_id_fk = turma.codigo_turma\n" +
-                "        ),\n" +
-                "        'participantes', (SELECT ARRAY_TO_JSON(ARRAY_AGG(json_build_object(\n" +
-                "            'codigo', turma_participante.codigo_turma_participante, \n" +
-                "            'nome_funcionario', funcionario.nome\n" +
-                "        )))\n" +
-                "        FROM turma_participante\n" +
-                "        LEFT JOIN funcionario ON turma_participante.funcionario_id_fk = funcionario.codigo_funcionario\n" +
-                "        WHERE turma_participante.turma_id_fk = turma.codigo_turma\n" +
-                "        )\n" +
-                "    ))) AS turmas\n" +
-                "FROM \n" +
-                "    curso\n" +
-                "LEFT JOIN turma ON turma.curso_id_fk = curso.codigo_curso\n" +
-                "GROUP BY \n" +
-                "    curso.codigo_curso, curso.nome, curso.duracao\n" +
-                "ORDER BY curso.nome\n" +
-                "LIMIT ? OFFSET 0";
-
+        String consultaInformacaoCompletaTurmas = "SELECT \r\n"
+        		+ "    curso.codigo_curso AS codigo_curso,\r\n"
+        		+ "    curso.nome AS nome_curso,\r\n"
+        		+ "    curso.duracao AS duracao_em_minutos,\r\n"
+        		+ "    (SELECT COUNT(*) FROM turma WHERE turma.curso_id_fk = curso.codigo_curso) AS quantidade_turmas,\r\n"
+        		+ "    ARRAY_TO_JSON(ARRAY_AGG(json_build_object(\r\n"
+        		+ "        'turma', turma.codigo_turma, \r\n"
+        		+ "        'data_inicio', turma.dt_inicio, \r\n"
+        		+ "        'data_fim', turma.dt_fim, \r\n"
+        		+ "        'local', turma.local,\r\n"
+        		+ "        'quantidade_participantes', (\r\n"
+        		+ "            SELECT COUNT(*) \r\n"
+        		+ "            FROM turma_participante \r\n"
+        		+ "            WHERE turma_participante.turma_id_fk = turma.codigo_turma\r\n"
+        		+ "        ),\r\n"
+        		+ "        'participantes', (\r\n"
+        		+ "            SELECT ARRAY_TO_JSON(ARRAY_AGG(json_build_object(\r\n"
+        		+ "                'codigo', turma_participante.codigo_turma_participante, \r\n"
+        		+ "                'nome_funcionario', funcionario.nome\r\n"
+        		+ "            )))\r\n"
+        		+ "            FROM turma_participante\r\n"
+        		+ "            LEFT JOIN funcionario ON turma_participante.funcionario_id_fk = funcionario.codigo_funcionario\r\n"
+        		+ "            WHERE turma_participante.turma_id_fk = turma.codigo_turma \r\n"
+        		+ "        )\r\n"
+        		+ "    ))) AS turmas\r\n"
+        		+ "FROM \r\n"
+        		+ "    curso\r\n"
+        		+ "LEFT JOIN turma ON turma.curso_id_fk = curso.codigo_curso\r\n"
+        		+ "WHERE turma.dt_inicio BETWEEN TO_DATE(?, 'YYYYMMDD') AND TO_DATE(?, 'YYYYMMDD')\r\n"
+        		+ "GROUP BY \r\n"
+        		+ "    curso.codigo_curso, curso.nome, curso.duracao\r\n"
+        		+ "ORDER BY curso.nome\r\n"
+        		+ "LIMIT ? OFFSET 0";
+        
         try {
             preparedStatement = dataSourceConfig.dataSource().getConnection().prepareStatement(consultaInformacaoCompletaTurmas);
-            preparedStatement.setInt(1, paginacao);
+
+            preparedStatement.setString(1, dataInicial);
+            preparedStatement.setString(2, dataFinal);
+            preparedStatement.setInt(3, paginacao);
+            
 
             resultSet = preparedStatement.executeQuery();
 
@@ -101,13 +105,12 @@ public class DAOTurmas {
                         TurmaResponse turma = new TurmaResponse();
                         turma.setCodigoTurma(codigoTurma);
 
-                        String dataInicio = turmaAtualJson.optString("data_inicio", "");
-                        String dataFim = turmaAtualJson.optString("data_fim", "");
-                        if (!dataInicio.isEmpty()) {
-                            turma.setDataInicio(LocalDate.parse(dataInicio, formatter));
+                        
+                        if (!dataInicial.isEmpty()) {
+                            turma.setDataInicio(LocalDate.parse(dataInicial, formatter)); // problema aqui
                         }
-                        if (!dataFim.isEmpty()) {
-                            turma.setDataFim(LocalDate.parse(dataFim, formatter));
+                        if (!dataFinal.isEmpty()) {
+                            turma.setDataFim(LocalDate.parse(dataFinal, formatter)); // problema aqui
                         }
 
                         turma.setLocal(turmaAtualJson.optString("local", ""));
@@ -274,7 +277,6 @@ public class DAOTurmas {
     			
     			finalJsonResponse.put("local_das_aulas", resultSet.getString("local_das_aulas"));
     			finalJsonResponse.put("nome_curso", resultSet.getString("nome_curso"));
-    			finalJsonResponse.put("descricao", resultSet.getString("descricao"));
     			finalJsonResponse.put("duracao_em_minutos", resultSet.getInt("duracao_em_minutos"));
     			finalJsonResponse.put("ativo", Boolean.parseBoolean(resultSet.getString("ativo")));
     			finalJsonResponse.put("quantidade_participantes", resultSet.getInt("qtd_participantes"));
@@ -285,7 +287,16 @@ public class DAOTurmas {
     		
     	}catch (Exception e) {
     		e.printStackTrace();
-		}
+		} finally {
+            try {
+                if (resultSet != null) resultSet.close();
+                if (preparedStatement != null) preparedStatement.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+                LOGGER.debug("Erro: " + e.getMessage() + " SQL usado para a consulta: " + consultaTurmasVinculadas + " argumento passado para o SQL: " + paginacao);
+            }
+        }
     	return listaTurmasVinculadas;
     }
+    
 }

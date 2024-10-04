@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -26,7 +25,6 @@ import java.util.List;
 public class DAOTurmas {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DAOTurmas.class);
-
 
     private final DataSourceConfig dataSourceConfig;
     
@@ -298,5 +296,12 @@ public class DAOTurmas {
         }
     	return listaTurmasVinculadas;
     }
+    
+    /*
+     * REMOVER UM PARTICIPANTE DE UMA TURMA... NÃO É POSSÍVEL DESATIVAR UM FUNCIONARIO ENQUANTO ELE ESTIVER VINCULADO A UMA TURMA
+     * 
+     * */
+   
+    
     
 }

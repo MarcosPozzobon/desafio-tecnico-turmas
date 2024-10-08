@@ -6,16 +6,19 @@ import com.marcos.desenvolvimento.desafio_tecnico.response.FullResultSetTurmaRes
 import com.marcos.desenvolvimento.desafio_tecnico.response.TurmaInformacoesBasicasResponse;
 import com.marcos.desenvolvimento.desafio_tecnico.response.TurmaParticipanteResponse;
 import com.marcos.desenvolvimento.desafio_tecnico.response.TurmaResponse;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -297,11 +300,124 @@ public class DAOTurmas {
     	return listaTurmasVinculadas;
     }
     
-    /*
-     * REMOVER UM PARTICIPANTE DE UMA TURMA... NÃO É POSSÍVEL DESATIVAR UM FUNCIONARIO ENQUANTO ELE ESTIVER VINCULADO A UMA TURMA
-     * 
-     * */
-   
+    public boolean isVinculadaAUmCurso(int codigoCurso) {
+    	String verificarVinculoEntreTurmaXCurso = "SELECT * FROM turma\r\n"
+    			+ "INNER JOIN curso ON codigo_curso = curso_id_fk\r\n"
+    			+ "WHERE codigo_curso = ?";
+    	
+    	PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
+    	try {
+    		
+    		preparedStatement = dataSourceConfig.dataSource().getConnection().prepareStatement(verificarVinculoEntreTurmaXCurso);
+    		preparedStatement.setInt(1, codigoCurso);
+    		
+    		resultSet = preparedStatement.executeQuery();
+    		int contagemRegistrosEncontrados = 0;
+    		
+    		if(resultSet.next()) {
+    			contagemRegistrosEncontrados++;
+    		}
+    		
+    		if(contagemRegistrosEncontrados > 0) {
+    			return true;
+    		}
+    		
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+            try {
+                if (resultSet != null) resultSet.close();
+                if (preparedStatement != null) preparedStatement.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+                LOGGER.debug("Erro: " + e.getMessage() + " SQL usado para a consulta: " + verificarVinculoEntreTurmaXCurso + " argumento passado para o SQL: " + codigoCurso);
+            }
+        }
+    	return false;
+    }
     
+    public boolean participantesVinculadosTurma(int codigoCurso) {
+    	String verificaVinculoTurmaXParticipante = "SELECT * FROM turma_participante\r\n"
+    			+ "INNER JOIN turma ON codigo_turma = turma_id_fk\r\n"
+    			+ "WHERE turma_id_fk = ?";
+    	PreparedStatement preparedStatement = null;
+    	ResultSet resultSet = null;
+    	try {
+			
+    		preparedStatement = dataSourceConfig.dataSource().getConnection().prepareStatement(verificaVinculoTurmaXParticipante);
+    		preparedStatement.setInt(1, codigoCurso);
+    		
+    		resultSet = preparedStatement.executeQuery();
+    		int contagemRegistrosEncontrados = 0;
+    		
+    		if(resultSet.next()) {
+    			contagemRegistrosEncontrados++;
+    		}
+    		
+    		if(contagemRegistrosEncontrados > 0) {
+    			return true;
+    		}
+    		
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+    	finally {
+            try {
+                if (preparedStatement != null) preparedStatement.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+                LOGGER.debug("Erro: " + e.getMessage() + " SQL usado para a consulta: " + verificaVinculoTurmaXParticipante + " argumento passado para o SQL: " + codigoCurso);
+            }
+        }
+    	return false;
+    }
+    
+    @Transactional
+    public HashMap<String, Object> deletarTurma(int codigoTurma) {
+    	
+        HashMap<String, Object> finalJsonResponse = new HashMap<>();
+        String deletarTurmaPermanentemente = "DELETE FROM turma WHERE codigo_turma = ?";
+
+        try (PreparedStatement preparedStatement = dataSourceConfig.dataSource().getConnection().prepareStatement(deletarTurmaPermanentemente)) {
+        	
+            if (isVinculadaAUmCurso(codigoTurma)) {
+
+                // verifica se n existem participantes vinculados a turma
+                if (!participantesVinculadosTurma(codigoTurma)) {
+                    preparedStatement.setInt(1, codigoTurma);
+                    int contagemRegistrosAfetados = preparedStatement.executeUpdate();
+
+                    // se uma turma for deletada com sucesso, retorna a resposta (isso deve deletar apenas 1 turma)
+                    if (contagemRegistrosAfetados == 1) {
+                        finalJsonResponse.put("turma_deletada", codigoTurma);
+                        finalJsonResponse.put("horario_remocao", LocalDateTime.now());
+                    } else {
+                        finalJsonResponse.put("status", 400);
+                        finalJsonResponse.put("timestamp", LocalDateTime.now());
+                        finalJsonResponse.put("msg", "Nenhuma turma encontrada com o código fornecido: " + codigoTurma);
+                    }
+
+                } else {
+                    finalJsonResponse.put("timestamp", LocalDateTime.now());
+                    finalJsonResponse.put("status", 400);
+                    finalJsonResponse.put("turma_fornecida", codigoTurma);
+                    finalJsonResponse.put("msg", "Não é possível deletar a turma, pois há participantes vinculados a ela.");
+                }
+
+            } else {
+                finalJsonResponse.put("erro", "O código fornecido não faz referência a nenhum curso. Código passado: " + codigoTurma);
+            }
+
+        } catch (SQLException e) {
+            LOGGER.error("Erro ao tentar deletar a turma com código {}: {}", codigoTurma, e.getMessage(), e);
+            finalJsonResponse.put("erro", "Erro ao deletar a turma: " + e.getMessage());
+        } catch (Exception e) {
+            LOGGER.error("Erro inesperado: {}", e.getMessage(), e);
+            finalJsonResponse.put("erro", "Erro inesperado: " + e.getMessage());
+        }
+
+        return finalJsonResponse;
+    }
     
 }

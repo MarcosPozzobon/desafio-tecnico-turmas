@@ -3,7 +3,7 @@ package com.marcos.desenvolvimento.desafio_tecnico.repository;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -20,8 +20,6 @@ public class DAOTurmaParticipante {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DAOTurmaParticipante.class);
 
 	private final DataSourceConfig dataSourceConfig;
-	    
-	private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
 
 	public DAOTurmaParticipante(DataSourceConfig dataSourceConfig){
 	        this.dataSourceConfig = dataSourceConfig;
@@ -29,17 +27,49 @@ public class DAOTurmaParticipante {
 	
 	public List<TurmaParticipanteResponse> listarTodosOsAlunos(int paginacao){
 		
-		String consultaString = "SELECT \r\n"
+		String consultaListagemParticipantes = "SELECT \r\n"
 				+ "	funcionario.nome AS nome_funcionario,\r\n"
 				+ "	turma_participante.codigo_turma_participante AS codigo_funcionario_turma\r\n"
 				+ "FROM \r\n"
 				+ "	turma_participante\r\n"
 				+ "INNER JOIN funcionario ON codigo_funcionario = funcionario_id_fk\r\n"
 				+ "ORDER BY funcionario.nome\r\n"
-				+ "LIMIT 10 OFFSET 0";
+				+ "LIMIT ? OFFSET 0";
+		List<TurmaParticipanteResponse> listagemParticipantes = new ArrayList<TurmaParticipanteResponse>();
 		
-		//TODO
-		return null;
+		try {
+			
+			PreparedStatement preparedStatement = null;
+			ResultSet resultSet = null;
+			
+			preparedStatement = dataSourceConfig.dataSource().getConnection().prepareStatement(consultaListagemParticipantes);
+			preparedStatement.setInt(1, paginacao);
+			resultSet = preparedStatement.executeQuery();
+			
+			while(resultSet.next()) {
+				TurmaParticipanteResponse turmaParticipante = new TurmaParticipanteResponse();
+				String nomeParticipante = resultSet.getString("nome_funcionario");
+				int codigoParticipante = resultSet.getInt("codigo_funcionario_turma");
+				
+				if(nomeParticipante != null && !nomeParticipante.isEmpty()) {
+					turmaParticipante.setNome(nomeParticipante);
+				} else {
+					turmaParticipante.setNome("");
+				}
+				
+				if(codigoParticipante > 0) {
+					turmaParticipante.setCodigoParticipanteTurma(codigoParticipante);
+				} else {
+					turmaParticipante.setCodigoParticipanteTurma(-1);
+				}
+				listagemParticipantes.add(turmaParticipante);
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return listagemParticipantes;
 
 	}
 	
@@ -102,7 +132,14 @@ public class DAOTurmaParticipante {
     		}
 		} catch (Exception e) {
 			LOGGER.error("Erro na classe " + this.getClass().getName() + " ao tentar realizar um DELETE na tabela turma_participante. Erro: " + e);
-		}
+		}finally {
+            try {
+                if (preparedStatement != null) preparedStatement.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+                LOGGER.debug("Erro: " + e.getMessage() + " SQL usado para a consulta: " + sqlRemoverParticipante);
+            }
+        }
     }
 
 }

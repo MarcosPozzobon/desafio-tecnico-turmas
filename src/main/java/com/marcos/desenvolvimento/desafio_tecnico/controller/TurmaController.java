@@ -2,10 +2,14 @@ package com.marcos.desenvolvimento.desafio_tecnico.controller;
 
 import com.marcos.desenvolvimento.desafio_tecnico.response.FullResultSetTurmaResponse;
 import com.marcos.desenvolvimento.desafio_tecnico.response.TurmaInformacoesBasicasResponse;
+import com.marcos.desenvolvimento.desafio_tecnico.usecases.DeleteTurmaUseCase;
 import com.marcos.desenvolvimento.desafio_tecnico.usecases.FindTurmasUseCase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,11 +24,14 @@ import java.util.List;
 public class TurmaController {
 
     private final FindTurmasUseCase findTurmasUseCase;
+    
+    private final DeleteTurmaUseCase deleteTurmaUseCase;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CursoController.class);
 
-    public TurmaController(FindTurmasUseCase findTurmasUseCase){
+    public TurmaController(FindTurmasUseCase findTurmasUseCase, DeleteTurmaUseCase deleteTurmaUseCase){
         this.findTurmasUseCase = findTurmasUseCase;
+        this.deleteTurmaUseCase = deleteTurmaUseCase;
     }
 
     @GetMapping("listar-turmas-informacao-completa/{paginacao}")
@@ -51,6 +58,10 @@ public class TurmaController {
     	LOGGER.info("O serviço de listagem de turmas vinculadas foi chamado em: " + this.getClass().getName());
     	return ResponseEntity.ok(findTurmasUseCase.listarTurmasVinculadasCurso(codigoCurso, paginacao));
     }
-
-   
+    
+    @DeleteMapping("deletar-turma/{codigo_turma}")
+    public ResponseEntity<HashMap<String, Object>> deletarTurmaDefinitivo(@PathVariable(value = "codigo_turma") int codigoTurma){
+    	LOGGER.info("O serviço de remoção definitiva de turmas foi chamado em: " + this.getClass().getName() + " deletando a turma: " + codigoTurma);
+    	return ResponseEntity.ok(deleteTurmaUseCase.deletarTurma(codigoTurma));
+    }
 }

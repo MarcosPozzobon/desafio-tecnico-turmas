@@ -1,9 +1,6 @@
 package com.marcos.desenvolvimento.desafio_tecnico.response;
 
-import com.marcos.desenvolvimento.desafio_tecnico.entity.Turma;
-
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 public class TurmaResponse {

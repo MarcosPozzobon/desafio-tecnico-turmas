@@ -1,17 +1,20 @@
 package com.marcos.desenvolvimento.desafio_tecnico.controller;
 
+import com.marcos.desenvolvimento.desafio_tecnico.request.TurmaRequest;
 import com.marcos.desenvolvimento.desafio_tecnico.response.FullResultSetTurmaResponse;
 import com.marcos.desenvolvimento.desafio_tecnico.response.TurmaInformacoesBasicasResponse;
 import com.marcos.desenvolvimento.desafio_tecnico.usecases.DeleteTurmaUseCase;
 import com.marcos.desenvolvimento.desafio_tecnico.usecases.FindTurmasUseCase;
+import com.marcos.desenvolvimento.desafio_tecnico.usecases.InsertTurmaUseCase;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,12 +29,15 @@ public class TurmaController {
     private final FindTurmasUseCase findTurmasUseCase;
     
     private final DeleteTurmaUseCase deleteTurmaUseCase;
+    
+    private final InsertTurmaUseCase insertTurmaUseCase;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CursoController.class);
 
-    public TurmaController(FindTurmasUseCase findTurmasUseCase, DeleteTurmaUseCase deleteTurmaUseCase){
+    public TurmaController(FindTurmasUseCase findTurmasUseCase, DeleteTurmaUseCase deleteTurmaUseCase, InsertTurmaUseCase insertTurmaUseCase){
         this.findTurmasUseCase = findTurmasUseCase;
         this.deleteTurmaUseCase = deleteTurmaUseCase;
+        this.insertTurmaUseCase = insertTurmaUseCase;
     }
 
     @GetMapping("listar-turmas-informacao-completa/{paginacao}")
@@ -63,5 +69,12 @@ public class TurmaController {
     public ResponseEntity<HashMap<String, Object>> deletarTurmaDefinitivo(@PathVariable(value = "codigo_turma") int codigoTurma){
     	LOGGER.info("O serviço de remoção definitiva de turmas foi chamado em: " + this.getClass().getName() + " deletando a turma: " + codigoTurma);
     	return ResponseEntity.ok(deleteTurmaUseCase.deletarTurma(codigoTurma));
+    }
+    
+    @PostMapping("salvar-turma")
+    public ResponseEntity<Void> salvarTurma(@RequestBody final TurmaRequest turmaJsonRequest){
+    	LOGGER.info("O serviço de cadastro de turmas foi chamado em: " + this.getClass().getName() + " passando a turma: " + turmaJsonRequest);
+    	insertTurmaUseCase.inserir(turmaJsonRequest);
+    	return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }

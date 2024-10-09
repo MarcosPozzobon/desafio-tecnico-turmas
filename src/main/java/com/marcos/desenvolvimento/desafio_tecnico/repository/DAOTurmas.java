@@ -1,6 +1,8 @@
 package com.marcos.desenvolvimento.desafio_tecnico.repository;
 
 import com.marcos.desenvolvimento.desafio_tecnico.config.DataSourceConfig;
+import com.marcos.desenvolvimento.desafio_tecnico.entity.Turma;
+import com.marcos.desenvolvimento.desafio_tecnico.request.TurmaRequest;
 import com.marcos.desenvolvimento.desafio_tecnico.response.CursoResponse;
 import com.marcos.desenvolvimento.desafio_tecnico.response.FullResultSetTurmaResponse;
 import com.marcos.desenvolvimento.desafio_tecnico.response.TurmaInformacoesBasicasResponse;
@@ -14,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -419,5 +422,58 @@ public class DAOTurmas {
 
         return finalJsonResponse;
     }
+    
+    @Transactional
+    public void cadastrarTurma(TurmaRequest turmaJsonRequest) {
+    	
+    	String sqlInclusaoNovaTurma = "INSERT INTO turma (dt_inicio, dt_fim, local, curso_id_fk) VALUES (?, ?, ?, ?)";
+    	
+    	try(PreparedStatement preparedStatement = dataSourceConfig.dataSource().getConnection().prepareStatement(sqlInclusaoNovaTurma)){
+
+    		if (turmaJsonRequest.getDtInicio() != null) {
+                preparedStatement.setDate(1, Date.valueOf(turmaJsonRequest.getDtInicio())); 
+            } else {
+                preparedStatement.setNull(1, java.sql.Types.DATE); 
+            }
+
+            if (turmaJsonRequest.getDtFim() != null) {
+                preparedStatement.setDate(2, Date.valueOf(turmaJsonRequest.getDtFim())); 
+            } else {
+                preparedStatement.setNull(2, java.sql.Types.DATE); 
+            }
+
+            if (turmaJsonRequest.getLocal() != null && !turmaJsonRequest.getLocal().isEmpty()) {
+                preparedStatement.setString(3, turmaJsonRequest.getLocal());
+            } else {
+                preparedStatement.setNull(3, java.sql.Types.VARCHAR); 
+            }
+
+            if (turmaJsonRequest.getCursoIdFk() > 0) {
+                preparedStatement.setInt(4, turmaJsonRequest.getCursoIdFk());
+            } else {
+                preparedStatement.setNull(4, java.sql.Types.INTEGER); 
+            }
+    		
+    		int linhasAfetadas = preparedStatement.executeUpdate();
+    		
+    		if(linhasAfetadas == 1) {
+    			LOGGER.info("Realizado um insert na tabela de turma com os seguintes valores: " + turmaJsonRequest.toString());
+    		} else {
+    			LOGGER.warn("Provavelmente alguma coisa deu errado. Validar o último insert realizado às: " + LocalDateTime.now());
+    		}
+
+    	}catch (Exception e) {
+			e.printStackTrace();
+		}
+    	
+    }
+    
+    @Transactional
+    public TurmaResponse atualizarTurma(TurmaRequest turmaRequest, int codigoTurma) {
+    	String sqlAtualizarInformacoesTurma = "UPDATE turma SET dt_inicio = ?, dt_fim = ?, local = ?, curso_id_fk = ? WHERE codigo_turma = ?";
+    	//TODO
+    }
+    
+    
     
 }

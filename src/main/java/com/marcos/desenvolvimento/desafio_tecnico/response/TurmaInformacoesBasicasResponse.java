@@ -2,6 +2,7 @@ package com.marcos.desenvolvimento.desafio_tecnico.response;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class TurmaInformacoesBasicasResponse {

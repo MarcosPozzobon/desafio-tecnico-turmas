@@ -1,7 +1,8 @@
 package com.marcos.desenvolvimento.desafio_tecnico.repository;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marcos.desenvolvimento.desafio_tecnico.config.DataSourceConfig;
-import com.marcos.desenvolvimento.desafio_tecnico.entity.Turma;
+import com.marcos.desenvolvimento.desafio_tecnico.request.TurmaAtualizacaoRequest;
 import com.marcos.desenvolvimento.desafio_tecnico.request.TurmaRequest;
 import com.marcos.desenvolvimento.desafio_tecnico.response.CursoResponse;
 import com.marcos.desenvolvimento.desafio_tecnico.response.FullResultSetTurmaResponse;
@@ -31,13 +32,17 @@ import java.util.List;
 public class DAOTurmas {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DAOTurmas.class);
+    
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     private final DataSourceConfig dataSourceConfig;
     
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+    private final ObjectMapper objectMapper;
 
-    public DAOTurmas(DataSourceConfig dataSourceConfig){
+
+    public DAOTurmas(DataSourceConfig dataSourceConfig, ObjectMapper objectMapper){
         this.dataSourceConfig = dataSourceConfig;
+        this.objectMapper = objectMapper;
     }
 
     public List<FullResultSetTurmaResponse> buscarTurmas(String dataInicial, String dataFinal, int paginacao) {
@@ -175,7 +180,6 @@ public class DAOTurmas {
     	
     	PreparedStatement preparedStatement = null;
     	ResultSet resultSet = null;
-    	TurmaInformacoesBasicasResponse turmaInformacoesBasicasAtual = new TurmaInformacoesBasicasResponse();
     	List<TurmaInformacoesBasicasResponse> listaDeTurmasInformacaoBasica = new ArrayList<TurmaInformacoesBasicasResponse>();
     	
     	String buscarInfoBasicaTurmas = "SELECT \r\n"
@@ -201,7 +205,9 @@ public class DAOTurmas {
     			
     			String dataInicialTurma = resultSet.getString("data_inicial");
     			String dataFinalTurma = resultSet.getString("data_final");
-    			
+
+                TurmaInformacoesBasicasResponse turmaInformacoesBasicasAtual = new TurmaInformacoesBasicasResponse();
+
     			turmaInformacoesBasicasAtual.setDataInicio(LocalDate.parse(dataInicialTurma, formatter));
     			turmaInformacoesBasicasAtual.setDataFim(LocalDate.parse(dataFinalTurma, formatter));
     			turmaInformacoesBasicasAtual.setLocal(resultSet.getString("local_das_aulas"));
@@ -457,7 +463,7 @@ public class DAOTurmas {
     		int linhasAfetadas = preparedStatement.executeUpdate();
     		
     		if(linhasAfetadas == 1) {
-    			LOGGER.info("Realizado um insert na tabela de turma com os seguintes valores: " + turmaJsonRequest.toString());
+    			LOGGER.info("Realizado um insert na tabela de turma com os seguintes valores: " + objectMapper.writeValueAsString(turmaJsonRequest));
     		} else {
     			LOGGER.warn("Provavelmente alguma coisa deu errado. Validar o último insert realizado às: " + LocalDateTime.now());
     		}
@@ -469,11 +475,54 @@ public class DAOTurmas {
     }
     
     @Transactional
-    public TurmaResponse atualizarTurma(TurmaRequest turmaRequest, int codigoTurma) {
-    	String sqlAtualizarInformacoesTurma = "UPDATE turma SET dt_inicio = ?, dt_fim = ?, local = ?, curso_id_fk = ? WHERE codigo_turma = ?";
-    	//TODO
+    public TurmaInformacoesBasicasResponse atualizarTurma(final TurmaAtualizacaoRequest turmaAtualizacaoJsonRequest, int codigoTurma) {
+        String sqlAtualizarInformacoesTurma = "UPDATE turma SET dt_inicio = ?, dt_fim = ?, local = ? WHERE codigo_turma = ?";
+        TurmaInformacoesBasicasResponse finalJsonTurmaInformacaoBasicaResponse = new TurmaInformacoesBasicasResponse();
+
+        try (PreparedStatement preparedStatement = dataSourceConfig.dataSource().getConnection().prepareStatement(sqlAtualizarInformacoesTurma)) {
+
+            if (turmaAtualizacaoJsonRequest.getDtInicio() != null) {     
+                preparedStatement.setDate(1, Date.valueOf(turmaAtualizacaoJsonRequest.getDtInicio())); 
+                finalJsonTurmaInformacaoBasicaResponse.setDataInicio(turmaAtualizacaoJsonRequest.getDtInicio());
+            } else {
+                preparedStatement.setNull(1, java.sql.Types.DATE); 
+            }
+
+            if (turmaAtualizacaoJsonRequest.getDtFim() != null) {
+                preparedStatement.setDate(2, Date.valueOf(turmaAtualizacaoJsonRequest.getDtFim()));
+                finalJsonTurmaInformacaoBasicaResponse.setDataFim(turmaAtualizacaoJsonRequest.getDtFim());
+            } else {
+                preparedStatement.setNull(2, java.sql.Types.DATE); 
+            }
+
+            if (turmaAtualizacaoJsonRequest.getLocal() != null && !turmaAtualizacaoJsonRequest.getLocal().isEmpty()) {
+                preparedStatement.setString(3, turmaAtualizacaoJsonRequest.getLocal());
+                finalJsonTurmaInformacaoBasicaResponse.setLocal(turmaAtualizacaoJsonRequest.getLocal());
+            } else {
+                preparedStatement.setNull(3, java.sql.Types.VARCHAR); 
+            }
+
+            if (codigoTurma > 0) {
+                preparedStatement.setInt(4, codigoTurma);
+            } else {
+                LOGGER.warn("Código da turma inválido: " + codigoTurma);
+                throw new IllegalArgumentException("Código da turma deve ser maior que zero.");
+            }
+
+            int linhasAfetadas = preparedStatement.executeUpdate();
+            
+            if (linhasAfetadas == 1) {
+                LOGGER.info("A turma de código: " + codigoTurma + " foi alterada em: " + LocalDate.now());
+                return finalJsonTurmaInformacaoBasicaResponse;
+            } else {
+                LOGGER.warn("Mais registros foram afetados indevidamente. Verificar o código afetado no banco de dados! Código: " + codigoTurma);
+            }
+            
+        } catch (SQLException e) {
+            LOGGER.error("Erro ao atualizar turma. Mensagem: " + e.getMessage(), e);
+            throw new RuntimeException("Erro ao atualizar turma.", e);
+        }
+        return null;
     }
-    
-    
     
 }

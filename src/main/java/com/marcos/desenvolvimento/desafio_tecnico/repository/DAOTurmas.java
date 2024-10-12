@@ -45,7 +45,7 @@ public class DAOTurmas {
         this.objectMapper = objectMapper;
     }
 
-    public List<FullResultSetTurmaResponse> buscarTurmas(String dataInicial, String dataFinal, int paginacao) {
+    public List<FullResultSetTurmaResponse> buscarTurmas(String dataInicialFitro, String dataFinalFitro, int paginacao) {
 
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
@@ -80,7 +80,7 @@ public class DAOTurmas {
         		+ "FROM \r\n"
         		+ "    curso\r\n"
         		+ "LEFT JOIN turma ON turma.curso_id_fk = curso.codigo_curso\r\n"
-        		+ "WHERE turma.dt_inicio BETWEEN TO_DATE(?, 'YYYYMMDD') AND TO_DATE(?, 'YYYYMMDD')\r\n"
+        		+ "WHERE turma.dt_inicio BETWEEN TO_DATE(?, 'YYYY-MM-DD') AND TO_DATE(?, 'YYYY-MM-DD')\r\n"
         		+ "GROUP BY \r\n"
         		+ "    curso.codigo_curso, curso.nome, curso.duracao\r\n"
         		+ "ORDER BY curso.nome\r\n"
@@ -89,8 +89,8 @@ public class DAOTurmas {
         try {
             preparedStatement = dataSourceConfig.dataSource().getConnection().prepareStatement(consultaInformacaoCompletaTurmas);
 
-            preparedStatement.setString(1, dataInicial);
-            preparedStatement.setString(2, dataFinal);
+            preparedStatement.setString(1, dataInicialFitro);
+            preparedStatement.setString(2, dataFinalFitro);
             preparedStatement.setInt(3, paginacao);
             
 
@@ -114,12 +114,14 @@ public class DAOTurmas {
                         TurmaResponse turma = new TurmaResponse();
                         turma.setCodigoTurma(codigoTurma);
 
-                        
+                        String dataInicial = turmaAtualJson.getString("data_inicio");
+                        String dataFinal = turmaAtualJson.getString("data_fim");
+
                         if (!dataInicial.isEmpty()) {
-                            turma.setDataInicio(LocalDate.parse(dataInicial, formatter)); // problema aqui
+                            turma.setDataInicio(LocalDate.parse(dataInicial, formatter));
                         }
                         if (!dataFinal.isEmpty()) {
-                            turma.setDataFim(LocalDate.parse(dataFinal, formatter)); // problema aqui
+                            turma.setDataFim(LocalDate.parse(dataFinal, formatter));
                         }
 
                         turma.setLocal(turmaAtualJson.optString("local", ""));

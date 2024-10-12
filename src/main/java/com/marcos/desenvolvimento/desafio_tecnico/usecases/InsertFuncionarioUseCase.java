@@ -5,10 +5,15 @@ import com.marcos.desenvolvimento.desafio_tecnico.repository.DAOFuncionario;
 import com.marcos.desenvolvimento.desafio_tecnico.request.FuncionarioRequest;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 @Service
 public class InsertFuncionarioUseCase {
 
     private final DAOFuncionario daoFuncionario;
+
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public InsertFuncionarioUseCase(DAOFuncionario daoFuncionario){
         this.daoFuncionario = daoFuncionario;
@@ -36,7 +41,7 @@ public class InsertFuncionarioUseCase {
             funcionario.setCargo(funcionarioRequest.getCargo());
         }
 
-        funcionario.setIsAtivo(true);
+        funcionario.setIsAtivo("true");
         daoFuncionario.salvarFuncionario(funcionario);
     }
 }

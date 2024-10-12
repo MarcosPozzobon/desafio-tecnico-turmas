@@ -12,8 +12,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Repository
@@ -24,6 +27,8 @@ public class DAOFuncionario {
     private final JdbcTemplate jdbcTemplate;
     
     private final DataSourceConfig dataSourceConfig;
+
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public DAOFuncionario(JdbcTemplate jdbcTemplate, DataSourceConfig dataSourceConfig){
         this.jdbcTemplate = jdbcTemplate;
@@ -40,7 +45,7 @@ public class DAOFuncionario {
                     funcionario.getDtNascimento(),
                     funcionario.getCargo(),
                     funcionario.getDtAdmissao(),
-                    funcionario.isAtivo());
+                    funcionario.getIsAtivo());
 
             LOGGER.info("Realizado um INSERT na tabela funcionario com os seguinte valores: nome={}, cpf={}, data de nascimento={}, cargo={}, data de admissão={} e is_ativo={}",
                     funcionario.getNome(),
@@ -48,7 +53,7 @@ public class DAOFuncionario {
                     funcionario.getDtNascimento(),
                     funcionario.getCargo(),
                     funcionario.getDtAdmissao(),
-                    funcionario.isAtivo());
+                    funcionario.getIsAtivo());
         } catch (Exception e) {
             LOGGER.error("Erro ao realizar um insert na tabela funcionario! Classe de erro: " + this.getClass().getName(), e);
         }
@@ -67,20 +72,51 @@ public class DAOFuncionario {
 
     @Transactional
     public void atualizarFuncionario(FuncionarioRequest funcionarioRequest, int codigoFuncionario){
-        try{
-            String atualizarFuncionario = "UPDATE funcionario SET nome = ?, cpf = ?, dt_nascimento = ?, cargo = ?, dt_admissao = ? WHERE codigo_funcionario = ?";
-            jdbcTemplate.update(
-                    atualizarFuncionario,
-                    funcionarioRequest.getNome(),
-                    funcionarioRequest.getCpf(),
-                    funcionarioRequest.getDtNascimento(),
-                    funcionarioRequest.getCargo(),
-                    funcionarioRequest.getDtAdmissao(),
-                    codigoFuncionario
-            );
-        }catch (Exception e){
-            throw new RuntimeException("Alguma coisa deu errado em " + this.getClass().getName(), e);
+
+        String atualizarFuncionario = "UPDATE funcionario SET nome = ?, cpf = ?, dt_nascimento = ?, cargo = ?, is_ativo = ?, dt_admissao = ? WHERE codigo_funcionario = ?";
+        try(PreparedStatement preparedStatement = dataSourceConfig.dataSource().getConnection().prepareStatement(atualizarFuncionario)){
+
+            if(funcionarioRequest.getNome() != null && !funcionarioRequest.getNome().isEmpty()){
+                preparedStatement.setString(1, funcionarioRequest.getNome());
+            }
+
+            if(funcionarioRequest.getCpf() != null && !funcionarioRequest.getCpf().isEmpty()){
+                preparedStatement.setString(2, funcionarioRequest.getCpf());
+            }
+
+            if(funcionarioRequest.getDtNascimento() != null){
+                preparedStatement.setDate(3, Date.valueOf(funcionarioRequest.getDtAdmissao()));
+            }
+
+            if(funcionarioRequest.getCargo() != null && !funcionarioRequest.getCargo().isEmpty()){
+                preparedStatement.setString(4, funcionarioRequest.getCargo());
+            }
+
+            if(funcionarioRequest.getIsAtivo() != null && !funcionarioRequest.getIsAtivo().isEmpty()){
+                preparedStatement.setString(5, funcionarioRequest.getIsAtivo());
+            }
+
+            if(funcionarioRequest.getDtNascimento() != null){
+                preparedStatement.setDate(6, Date.valueOf(funcionarioRequest.getDtNascimento()));
+            }
+
+            if(codigoFuncionario > 0){
+                preparedStatement.setInt(7, codigoFuncionario);
+            }
+
+            int registrosAfetados = preparedStatement.executeUpdate();
+
+            if(registrosAfetados == 1){
+                LOGGER.info("O funcionario de codigo: " + codigoFuncionario + " foi atualizado.");
+            } else {
+                LOGGER.warn("Alguma coisa estranha que nao deveria ter acontecido, aconteceu. Verificar no banco de dados.");
+            }
+
+        }catch (Exception exception){
+            exception.printStackTrace();
         }
+
+
     }
 
     public List<Funcionario> buscarFuncionarioPorNome(String nomeFuncionario) {
@@ -105,19 +141,17 @@ public class DAOFuncionario {
         throw new IllegalArgumentException("Argumento inválido: " + nomeFuncionario + " passado em :" + this.getClass().getName());
     }
 
-    public List<Funcionario> buscarFuncionariosAtivos(int pagina, int tamanho) {
+    public List<Funcionario> buscarFuncionariosAtivos(int paginacao) {
         try {
             String buscaFuncionariosAtivos = "" +
                     "SELECT nome, cpf, dt_nascimento, cargo, dt_admissao FROM funcionario " +
                     "WHERE is_ativo = 'true' " +
                     "ORDER BY nome" +
-                    "LIMIT ? OFFSET ?";
-
-            int offset = pagina * tamanho;
+                    " LIMIT ? OFFSET 0";
 
             List<Funcionario> funcionariosExistentes = jdbcTemplate.query(
                     buscaFuncionariosAtivos,
-                    new Object[]{tamanho, offset},
+                    new Object[]{paginacao},
                     new BeanPropertyRowMapper<>(Funcionario.class)
             );
             return funcionariosExistentes;
@@ -126,22 +160,20 @@ public class DAOFuncionario {
         }
     }
 
-    public List<Funcionario> buscarFuncionariosInativos(int pagina, int tamanho) {
+    public List<Funcionario> buscarFuncionariosInativos(int paginacao) {
         try {
             String buscaFuncionariosAtivos = "" +
                     "SELECT nome, cpf, dt_nascimento, cargo, dt_admissao FROM funcionario " +
                     "WHERE is_ativo = 'false' " +
                     "ORDER BY nome" +
-                    "LIMIT ? OFFSET ?";
-
-            int offset = pagina * tamanho;
+                    " LIMIT ? OFFSET 0";
 
             List<Funcionario> funcionariosExistentes = jdbcTemplate.query(
                     buscaFuncionariosAtivos,
-                    new Object[]{tamanho, offset},
+                    new Object[]{paginacao},
                     new BeanPropertyRowMapper<>(Funcionario.class)
             );
-            return funcionariosExistentes;
+                return funcionariosExistentes;
         } catch (Exception e) {
             throw new RuntimeException("Alguma coisa deu errado em " + this.getClass().getName(), e);
         }
@@ -169,7 +201,7 @@ public class DAOFuncionario {
     			funcionario.setCpf(resultSet.getString("cpf"));
     			funcionario.setDtNascimento(null);
     			funcionario.setDtAdmissao(null);
-    			funcionario.setIsAtivo(Boolean.parseBoolean(resultSet.getString("is_ativo")));
+    			funcionario.setIsAtivo(resultSet.getString("is_ativo"));
     		}
     		
 		} catch (Exception e) {

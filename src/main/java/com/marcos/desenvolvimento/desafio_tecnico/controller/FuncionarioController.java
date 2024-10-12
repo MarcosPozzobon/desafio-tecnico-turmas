@@ -64,22 +64,16 @@ public class FuncionarioController {
         return ResponseEntity.ok(funcionarioMapper.toFuncionarioResponseList(findFuncionarioUseCase.encontrarPorNome(nomeFuncionario)));
     }
 
-    @GetMapping("/listar-funcionarios-ativos")
-    public ResponseEntity<List<FuncionarioResponse>> listarFuncionariosAtivos(
-            @RequestParam(value = "pagina", defaultValue = "0") int pagina,
-            @RequestParam(value = "tamanho", defaultValue = "10") int tamanho
-    ){
+    @GetMapping("/listar-funcionarios-ativos/paginacao/{paginacao}")
+    public ResponseEntity<List<FuncionarioResponse>> listarFuncionariosAtivos(@PathVariable(value = "paginacao") int paginacao){
         LOGGER.info("O serviço de listagem por funcionários ativos foi chamado em: " + this.getClass().getName());
-        return ResponseEntity.ok(funcionarioMapper.toFuncionarioResponseList(findFuncionarioUseCase.listarAtivos(pagina, tamanho)));
+        return ResponseEntity.ok(funcionarioMapper.toFuncionarioResponseList(findFuncionarioUseCase.listarAtivos(paginacao)));
     }
 
-    @GetMapping("/listar-funcionarios-inativos")
-    public ResponseEntity<List<FuncionarioResponse>> listarFuncionariosInativos(
-            @RequestParam(value = "pagina", defaultValue = "0") int pagina,
-            @RequestParam(value = "tamanho", defaultValue = "10") int tamanho
-    ){
+    @GetMapping("/listar-funcionarios-inativos/paginacao/{paginacao}")
+    public ResponseEntity<List<FuncionarioResponse>> listarFuncionariosInativos(@PathVariable(value = "paginacao") int paginacao){
         LOGGER.info("O serviço de listagem por funcionários inativos foi chamado em: " + this.getClass().getName());
-        return ResponseEntity.ok(funcionarioMapper.toFuncionarioResponseList(findFuncionarioUseCase.listarAtivos(pagina, tamanho)));
+        return ResponseEntity.ok(funcionarioMapper.toFuncionarioResponseList(findFuncionarioUseCase.listarInativos(paginacao)));
     }
     
     @GetMapping("/listar-funcionario/{codigo}")

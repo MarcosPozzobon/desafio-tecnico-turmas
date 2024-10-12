@@ -1,5 +1,8 @@
 package com.marcos.desenvolvimento.desafio_tecnico.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.time.LocalDate;
 import java.util.Date;
 
 public class FuncionarioRequest {
@@ -8,25 +11,26 @@ public class FuncionarioRequest {
 
     private String cpf;
 
-    private Date dtNascimento;
+    @JsonProperty(value = "dt_nascimento")
+    private LocalDate dtNascimento;
 
     private String cargo;
 
-    private Date dtAdmissao;
+    @JsonProperty(value = "dt_admissao")
+    private LocalDate dtAdmissao;
 
-    private boolean status;
+    @JsonProperty(value = "is_ativo")
+    private String isAtivo;
 
-    public FuncionarioRequest() {
+    public FuncionarioRequest(){}
 
-    }
-
-    public FuncionarioRequest(String nome, String cpf, Date dtNascimento, String cargo, Date dtAdmissao, boolean status) {
+    public FuncionarioRequest(String nome, String cpf, LocalDate dtNascimento, String cargo, LocalDate dtAdmissao, String isAtivo) {
         this.nome = nome;
         this.cpf = cpf;
         this.dtNascimento = dtNascimento;
         this.cargo = cargo;
         this.dtAdmissao = dtAdmissao;
-        this.status = status;
+        this.isAtivo = isAtivo;
     }
 
     public String getNome() {
@@ -45,11 +49,11 @@ public class FuncionarioRequest {
         this.cpf = cpf;
     }
 
-    public Date getDtNascimento() {
+    public LocalDate getDtNascimento() {
         return dtNascimento;
     }
 
-    public void setDtNascimento(Date dtNascimento) {
+    public void setDtNascimento(LocalDate dtNascimento) {
         this.dtNascimento = dtNascimento;
     }
 
@@ -61,19 +65,19 @@ public class FuncionarioRequest {
         this.cargo = cargo;
     }
 
-    public Date getDtAdmissao() {
+    public LocalDate getDtAdmissao() {
         return dtAdmissao;
     }
 
-    public void setDtAdmissao(Date dtAdmissao) {
+    public void setDtAdmissao(LocalDate dtAdmissao) {
         this.dtAdmissao = dtAdmissao;
     }
 
-    public boolean isStatus() {
-        return status;
+    public String getIsAtivo() {
+        return isAtivo;
     }
 
-    public void setStatus(boolean status) {
-        this.status = status;
+    public void setIsAtivo(String isAtivo) {
+        this.isAtivo = isAtivo;
     }
 }

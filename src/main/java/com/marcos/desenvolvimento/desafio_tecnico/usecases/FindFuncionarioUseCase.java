@@ -28,13 +28,13 @@ public class FindFuncionarioUseCase {
     }
 
     @Cacheable(value = "funcionarios_ativos")
-    public List<Funcionario> listarAtivos(final int pagina, final int tamanho){
-        return daoFuncionario.buscarFuncionariosAtivos(pagina, tamanho);
+    public List<Funcionario> listarAtivos(final int paginacao){
+        return daoFuncionario.buscarFuncionariosAtivos(paginacao);
     }
 
     @Cacheable(value = "funcionarios-inativos")
-    public List<Funcionario> listarInativos(final int pagina, final int tamanho){
-        return daoFuncionario.buscarFuncionariosInativos(pagina, tamanho);
+    public List<Funcionario> listarInativos(final int paginacao){
+        return daoFuncionario.buscarFuncionariosInativos(paginacao);
     }
     
     public Funcionario buscarFuncionarioPorCodigo(final int codigo) {

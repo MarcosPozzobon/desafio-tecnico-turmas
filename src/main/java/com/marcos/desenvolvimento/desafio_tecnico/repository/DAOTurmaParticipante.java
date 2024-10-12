@@ -141,5 +141,47 @@ public class DAOTurmaParticipante {
             }
         }
     }
+	
+	public boolean existeRelacaoNaTabelaFuncionario(int codigoFuncionario) {
+		String verificaRelacionamento = "SELECT * FROM funcionario WHERE codigo_funcionario = ?";
+		ResultSet resultSet = null;
+		try(PreparedStatement preparedStatement = dataSourceConfig.dataSource().getConnection().prepareStatement(verificaRelacionamento)){
+			
+			preparedStatement.setInt(1, codigoFuncionario);
+			resultSet = preparedStatement.executeQuery();
+			
+			if(resultSet.next()) {
+				return true;
+			}
+			
+		}catch (Exception e) {
+			LOGGER.error("Erro no metodo de validacao de relacionamento entre turma participante x funcionario: " + e);
+		}
+		return false;
+	}
+	
+	@Transactional
+	public void cadastrarParticipante(int codigoTurmaVinculada, int codigoFuncionario) {
+
+		String sqlInserirNovoParticipanteString = "INSERT INTO turma_participante (turma_id_fk, funcionario_id_fk) VALUES (?, ?)";
+		
+		try(PreparedStatement preparedStatement = dataSourceConfig.dataSource().getConnection().prepareStatement(sqlInserirNovoParticipanteString)){
+			
+			if(codigoFuncionario > 0 && codigoTurmaVinculada > 0) {
+				preparedStatement.setInt(1, codigoTurmaVinculada);
+				preparedStatement.setInt(2, codigoFuncionario);
+			}
+			
+			int registrosAfetados = preparedStatement.executeUpdate();
+			
+			if(registrosAfetados == 1) {
+				LOGGER.info("Inserido um novo participante: " + codigoFuncionario + " na turma: " + codigoTurmaVinculada);
+			}
+			
+		}catch (Exception e) {
+			LOGGER.error("Alguma coisa deu errado ao inserir o participante! Log de erro: " + e);
+		}
+		
+	}
 
 }

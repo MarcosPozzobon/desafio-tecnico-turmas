@@ -20,11 +20,8 @@ import java.util.List;
 public class FuncionarioController {
 
     private final InsertFuncionarioUseCase insertFuncionarioUseCase;
-
     private final UpdateFuncionarioUseCase updateFuncionarioUseCase;
-
     private final FindFuncionarioUseCase findFuncionarioUseCase;
-
     private final FuncionarioMapper funcionarioMapper;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FuncionarioController.class);
@@ -41,44 +38,44 @@ public class FuncionarioController {
         this.funcionarioMapper = funcionarioMapper;
     }
 
-    @PostMapping(value = "/salvar-novo-funcionario")
-    public ResponseEntity<Void> salvarNovoFuncionario(@RequestBody final FuncionarioRequest funcionarioRequest){
+    @PostMapping
+    public ResponseEntity<Void> criarFuncionario(@RequestBody final FuncionarioRequest funcionarioRequest) {
         insertFuncionarioUseCase.salvar(funcionarioRequest);
-        LOGGER.info("O serviço de salvar um novo funcionário foi chamado em: " + this.getClass().getName());
+        LOGGER.info("Criado um novo funcionário em: " + this.getClass().getName());
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @PutMapping(value = "/atualizar-funcionario/{codigo_funcionario}")
-    public ResponseEntity<Funcionario> atualizarFuncionarioExistente(
+    @PutMapping("/{codigoFuncionario}")
+    public ResponseEntity<Void> atualizarFuncionario(
             @RequestBody final FuncionarioRequest funcionarioRequest,
-            @PathVariable("codigo_funcionario") int codigoFuncionario
+            @PathVariable("codigoFuncionario") int codigoFuncionario
     ) {
         updateFuncionarioUseCase.atualizar(funcionarioRequest, codigoFuncionario);
-        LOGGER.info("O serviço de atualização de informações de funcionário foi chamado em: " + this.getClass().getName());
+        LOGGER.info("Atualizado funcionário com código {} em: {}", codigoFuncionario, this.getClass().getName());
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/encontrar-funcionario-por-nome/{nome_funcionario}")
-    public ResponseEntity<List<FuncionarioResponse>> encontrarFuncionarioPorNome(@PathVariable(value = "nome_funcionario") final String nomeFuncionario){
-        LOGGER.info("O serviço de busca de funcionário por nome foi chamado em: " + this.getClass().getName());
+    @GetMapping("/nome/{nomeFuncionario}")
+    public ResponseEntity<List<FuncionarioResponse>> buscarFuncionariosPorNome(@PathVariable("nomeFuncionario") final String nomeFuncionario) {
+        LOGGER.info("Buscando funcionários por nome em: " + this.getClass().getName());
         return ResponseEntity.ok(funcionarioMapper.toFuncionarioResponseList(findFuncionarioUseCase.encontrarPorNome(nomeFuncionario)));
     }
 
-    @GetMapping("/listar-funcionarios-ativos/paginacao/{paginacao}")
-    public ResponseEntity<List<FuncionarioResponse>> listarFuncionariosAtivos(@PathVariable(value = "paginacao") int paginacao){
-        LOGGER.info("O serviço de listagem por funcionários ativos foi chamado em: " + this.getClass().getName());
+    @GetMapping("/ativos/paginacao/{paginacao}")
+    public ResponseEntity<List<FuncionarioResponse>> listarFuncionariosAtivos(@PathVariable("paginacao") int paginacao) {
+        LOGGER.info("Listando funcionários ativos em: " + this.getClass().getName());
         return ResponseEntity.ok(funcionarioMapper.toFuncionarioResponseList(findFuncionarioUseCase.listarAtivos(paginacao)));
     }
 
-    @GetMapping("/listar-funcionarios-inativos/paginacao/{paginacao}")
-    public ResponseEntity<List<FuncionarioResponse>> listarFuncionariosInativos(@PathVariable(value = "paginacao") int paginacao){
-        LOGGER.info("O serviço de listagem por funcionários inativos foi chamado em: " + this.getClass().getName());
+    @GetMapping("/inativos/paginacao/{paginacao}")
+    public ResponseEntity<List<FuncionarioResponse>> listarFuncionariosInativos(@PathVariable("paginacao") int paginacao) {
+        LOGGER.info("Listando funcionários inativos em: " + this.getClass().getName());
         return ResponseEntity.ok(funcionarioMapper.toFuncionarioResponseList(findFuncionarioUseCase.listarInativos(paginacao)));
     }
-    
-    @GetMapping("/listar-funcionario/{codigo}")
-    public ResponseEntity<FuncionarioResponse> obterFuncionarioPorCodigo(@PathVariable(value = "codigo") final int codigo){
-    	LOGGER.info("O serviço de busca de funcionário por código foi chamado em: " + this.getClass().getName());
-    	return ResponseEntity.ok(funcionarioMapper.toFuncionarioResponse(findFuncionarioUseCase.buscarFuncionarioPorCodigo(codigo)));
+
+    @GetMapping("/{codigo}")
+    public ResponseEntity<FuncionarioResponse> obterFuncionarioPorCodigo(@PathVariable("codigo") final int codigo) {
+        LOGGER.info("Buscando funcionário por código em: " + this.getClass().getName());
+        return ResponseEntity.ok(funcionarioMapper.toFuncionarioResponse(findFuncionarioUseCase.buscarFuncionarioPorCodigo(codigo)));
     }
 }

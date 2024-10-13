@@ -25,6 +25,7 @@ public class InsertCursoUseCase {
         if(cursoRequest.getDescricao() != null || !cursoRequest.getDescricao().isEmpty()){
             curso.setDescricao(cursoRequest.getDescricao());
         }
+        curso.setIsAtivo("true");
         daoCurso.salvarCurso(curso);
     }
 

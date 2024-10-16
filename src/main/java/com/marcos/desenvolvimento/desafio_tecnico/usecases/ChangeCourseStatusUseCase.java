@@ -20,6 +20,4 @@ public class ChangeCourseStatusUseCase {
         daoCurso.ativarCurso(codigoCurso);
     }
 
-
-
 }

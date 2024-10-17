@@ -18,77 +18,9 @@ Requisitos e regras de negócio:
     A busca por funcionários recebe um parâmetro que indica se deve trazer só ativos, só inativos ou ambos. O retorno deve ser ordenado por nome da pessoa. O parâmetro de filtro é opcional e, se omito, traz todos. Mas, se fornecido, deve indicar 0 para inativos ou 1 para ativos.
    Implementar um endpoint que, dado um código de funcionário, o exclua de todas as turmas futuras. A ideia é utilizar o serviço quando um funcionário for desligado da empresa.
     Criar um endpoint que traga um detalhamento de todas as turmas cujas respectivas datas de início estejam dentro de um período estipulado no filtro, recebido por parâmetro. Esse filtro deve passar uma data inicial e uma final e a data de início da turma deve estar nesse intervalo (usar between na busca ou algo similar). Ordenar alfabeticamente pelo nome do curso. A consulta deve trazer um resultado conforme o Json de exemplo abaixo:
-    [
-        {
-            "codigo" : 13, 
-            "nome" : "Desenvolvendo APIs em Java com Spring Boot",
-            "duracao" : 2400,
-            "quantidadeTurmas" : 2,
-            "turmas" : [
-                           {
-                               "turma" : 18,
-                               "inicio" : "2025-01-06",
-                               "fim" : "2025-02-06",
-                               "local" : "sala 2 - sede",
-                               "quantidadeParticipantes" : 3,
-                               "participantes" : [
-                                                     {"codigo" : 1122, "nome" : "Alex Vidal Filho"},
-                                                     {"codigo" : 1156, "nome" : "Geison Lee"},
-                                                     {"codigo" : 2112, "nome" : "Nilo Peart"}
-                                                 ]
-                           },
-                           {
-                               "turma" : 22,
-                               "inicio" : "2025-05-02",
-                               "fim" : "2025-06-02",
-                               "local" : "sala 3 - sede",
-                               "quantidadeParticipantes" : 0,
-                               "participantes" : []
-                           }
-                       ]
-        },
-        {
-            "codigo" : 66, 
-            "nome" : "Desenvolvimento profissional com PHP",
-            "duracao" : 240,
-            "quantidadeTurmas" : 0,
-            "turmas" : []
-        },
-        {
-            "codigo" : 24, 
-            "nome" : "Francês instrumental",
-            "duracao" : 4800,
-            "quantidadeTurmas" : 2,
-            "turmas" : [
-                           {
-                               "turma" : 96,
-                               "inicio" : "2025-02-09",
-                               "fim" : "2025-04-09",
-                               "local" : "sala 2 - sede",
-                               "quantidadeParticipantes" : 4,
-                               "participantes" : [
-                                                     {"codigo" : 1156, "nome" : "Geison Lee"},
-                                                     {"codigo" : 2112, "nome" : "Nilo Peart"},
-                                                     {"codigo" : 9889, "nome" : "Frederico Moura"},
-                                                     {"codigo" : 9890, "nome" : "João de Coimbra"}
-                                                 ]
-                           },
-                           {
-                               "turma" : 99,
-                               "inicio" : "2025-05-19",
-                               "fim" : "2025-07-20",
-                               "local" : "sala 1 - grêmio",
-                               "quantidadeParticipantes" : 5,
-                               "participantes" : [
-                                                     {"codigo" : 1122, "nome" : "Alex Vidal Filho"},
-                                                     {"codigo" : 2344, "nome" : "João Massa"},
-                                                     {"codigo" : 2345, "nome" : "Davi Mustaine"},
-                                                     {"codigo" : 2346, "nome" : "Roberto Trujillo"},
-                                                     {"codigo" : 2347, "nome" : "Roger Tomé"}
-                           }
-                       ]
-        }
-    ]
+
+![Exemplo de retorno JSON ](exemplo_json.png)
+
 Mesmo quando uma turma não tenha participantes, a mesma deve aparecer no retorno da busca. O mesmo vale para um curso que não tenha turmas.
         
             
